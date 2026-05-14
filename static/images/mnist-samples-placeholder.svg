@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 520" role="img" aria-labelledby="title desc">
+  <title id="title">MNIST result grid placeholder</title>
+  <desc id="desc">A placeholder grid for decoded MNIST samples comparing kernel, OT-direct, and NPF.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#10182d"/><stop offset="1" stop-color="#080d1a"/></linearGradient>
+  </defs>
+  <rect width="920" height="520" rx="30" fill="url(#bg)"/>
+  <g font-family="Inter, system-ui, sans-serif">
+    <text x="40" y="58" fill="#f4f7fb" font-size="28" font-weight="900">Decoded MNIST samples</text>
+    <text x="40" y="90" fill="#aab7ce" font-size="16">Replace this SVG with your final grid at static/images/mnist-samples-placeholder.svg or update the img path.</text>
+    <g transform="translate(40 126)">
+      <text x="0" y="34" fill="#74e0d6" font-size="17" font-weight="800">Kernel</text>
+      <text x="0" y="148" fill="#74e0d6" font-size="17" font-weight="800">OT-direct</text>
+      <text x="0" y="262" fill="#74e0d6" font-size="17" font-weight="800">NPF / ICNN</text>
+    </g>
+    <g transform="translate(150 126)" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.14)">
+      <script type="application/ecmascript"><![CDATA[]]></script>
+      <g>
+        <rect x="0" y="0" width="74" height="74" rx="12"/><rect x="90" y="0" width="74" height="74" rx="12"/><rect x="180" y="0" width="74" height="74" rx="12"/><rect x="270" y="0" width="74" height="74" rx="12"/><rect x="360" y="0" width="74" height="74" rx="12"/><rect x="450" y="0" width="74" height="74" rx="12"/><rect x="540" y="0" width="74" height="74" rx="12"/><rect x="630" y="0" width="74" height="74" rx="12"/>
+        <rect x="0" y="114" width="74" height="74" rx="12"/><rect x="90" y="114" width="74" height="74" rx="12"/><rect x="180" y="114" width="74" height="74" rx="12"/><rect x="270" y="114" width="74" height="74" rx="12"/><rect x="360" y="114" width="74" height="74" rx="12"/><rect x="450" y="114" width="74" height="74" rx="12"/><rect x="540" y="114" width="74" height="74" rx="12"/><rect x="630" y="114" width="74" height="74" rx="12"/>
+        <rect x="0" y="228" width="74" height="74" rx="12"/><rect x="90" y="228" width="74" height="74" rx="12"/><rect x="180" y="228" width="74" height="74" rx="12"/><rect x="270" y="228" width="74" height="74" rx="12"/><rect x="360" y="228" width="74" height="74" rx="12"/><rect x="450" y="228" width="74" height="74" rx="12"/><rect x="540" y="228" width="74" height="74" rx="12"/><rect x="630" y="228" width="74" height="74" rx="12"/>
+      </g>
+    </g>
+    <g font-size="38" fill="#f4f7fb" font-weight="800" text-anchor="middle" opacity="0.9">
+      <text x="187" y="176">3</text><text x="277" y="176">8</text><text x="367" y="176">1</text><text x="457" y="176">0</text><text x="547" y="176">6</text><text x="637" y="176">2</text><text x="727" y="176">9</text><text x="817" y="176">4</text>
+      <text x="187" y="290">8</text><text x="277" y="290">0</text><text x="367" y="290">8</text><text x="457" y="290">0</text><text x="547" y="290">6</text><text x="637" y="290">8</text><text x="727" y="290">0</text><text x="817" y="290">8</text>
+      <text x="187" y="404">3</text><text x="277" y="404">0</text><text x="367" y="404">1</text><text x="457" y="404">8</text><text x="547" y="404">6</text><text x="637" y="404">2</text><text x="727" y="404">0</text><text x="817" y="404">5</text>
+    </g>
+  </g>
+</svg>

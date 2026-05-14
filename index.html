@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Convex-Potential Drift Fields | Drifting-ICNN</title>
+    <meta
+      name="description"
+      content="Final project webpage for Convex-Potential Drift Fields: replacing kernel drifts with ICNN Brenier potentials in drifting generative models."
+    />
+    <meta property="og:title" content="Convex-Potential Drift Fields" />
+    <meta property="og:description" content="Replacing kernels with input-convex neural networks in drifting generative models." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="./static/images/social-preview.svg" />
+    <link rel="icon" href="./static/images/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#f7f9fc" />
+    <script>
+      (() => {
+        const savedTheme = localStorage.getItem('theme');
+        document.documentElement.dataset.theme = savedTheme === 'dark' ? 'dark' : 'light';
+      })();
+    </script>
+    <link rel="stylesheet" href="./static/css/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-scroll-shadow>
+      <nav class="nav shell" aria-label="Primary navigation">
+        <a class="brand" href="#top" aria-label="Project home">
+          <span class="brand-mark" aria-hidden="true">∇ψ</span>
+          <span class="brand-text">Drifting-ICNN</span>
+        </a>
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links">
+          <span class="sr-only">Toggle navigation</span>
+          <span></span><span></span><span></span>
+        </button>
+        <div class="nav-links" id="nav-links">
+          <a href="#abstract">Abstract</a>
+          <a href="#method">Method</a>
+          <a href="#results">Results</a>
+          <a href="#diagnostics">Diagnostics</a>
+          <a href="#next">Next</a>
+          <a href="#team">Team</a>
+        </div>
+        <button class="theme-toggle" type="button" aria-label="Switch to dark theme" data-theme-toggle>
+          <span class="theme-icon" aria-hidden="true">☾</span>
+          <span class="theme-label">Dark</span>
+        </button>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero section" id="top">
+        <div class="shell hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">CS-503 Visual Intelligence · Final Project</p>
+            <h1>Convex-Potential Drift Fields</h1>
+            <p class="subtitle">
+              Replacing kernel drift fields with gradients of input-convex neural networks in drifting generative models.
+            </p>
+            <p class="authors">
+              Alireza Abdollahpoorrostam · Johan I. A. Bordet · Satyam Chauhan · Quentin Chappuis
+            </p>
+            <div class="hero-actions" aria-label="Project links">
+              <a class="button primary" href="https://github.com/alirezaabdollahpour/Drifting-ICNN" target="_blank" rel="noreferrer">Project repository</a>
+              <a class="button" href="https://github.com/qchapp/Drifting-ICNN-website" target="_blank" rel="noreferrer">Website repository</a>
+              <a class="button ghost" href="#results">View results</a>
+            </div>
+          </div>
+          <aside class="hero-panel" aria-label="Result summary">
+            <div class="panel-glow" aria-hidden="true"></div>
+            <div class="metric-stack" id="hero-metrics">
+              <div class="mini-card">
+                <span class="mini-label">Best SW2²</span>
+                <strong>0.0196</strong>
+                <span>kernel baseline</span>
+              </div>
+              <div class="mini-card">
+                <span class="mini-label">NPF / ICNN</span>
+                <strong>0.0602</strong>
+                <span>stable, not yet best</span>
+              </div>
+              <div class="mini-card">
+                <span class="mini-label">Latent space</span>
+                <strong>6D</strong>
+                <span>frozen MNIST VAE</span>
+              </div>
+            </div>
+            <img class="hero-figure" src="./static/images/method-diagram.svg" alt="Diagram of Gaussian noise, a generator, latent drift, ICNN potential, and decoded samples." />
+          </aside>
+        </div>
+      </section>
+
+      <section class="section" id="abstract">
+        <div class="shell two-column">
+          <div>
+            <p class="section-kicker">Abstract</p>
+            <h2>Learning a drift as a Brenier map</h2>
+          </div>
+          <div class="prose large">
+            <p>
+              The original drifting generative model uses a kernel-based drift field. We instead parameterize the drift as
+              <span class="math">V<sub>ω</sub>(z) = ∇ψ<sub>ω</sub>(z) − z</span>, where <span class="math">ψ<sub>ω</sub></span>
+              is an input-convex neural network. This makes the learned map compatible with the structure of optimal transport:
+              a convex potential whose gradient transports generated latents toward data latents.
+            </p>
+            <p>
+              Our current pipeline operates in a frozen, whitened 6D MNIST VAE latent space. Direct entropic OT and ICNN drifts
+              are now numerically stable after a set of diagnostic fixes. The honest preliminary picture is that the kernel baseline
+              still gives the best diversity in this 6D regime, while the NPF/ICNN drift is competitive with OT-direct but remains
+              bottlenecked by the inner optimization loop.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section tinted" id="method">
+        <div class="shell">
+          <div class="section-heading">
+            <p class="section-kicker">Method</p>
+            <h2>From kernel drift to input-convex potential</h2>
+            <p>
+              We keep the drifting-generator idea, but replace the hand-designed kernel field by a learned convex potential.
+            </p>
+          </div>
+          <div class="method-grid">
+            <article class="card step-card">
+              <span class="step-number">01</span>
+              <h3>Encode data into a stable latent space</h3>
+              <p>
+                MNIST images are encoded by a convolutional VAE. The encoder mean is whitened and all transport/drift operations
+                are performed in 6D latent space; decoding is used only for visual inspection.
+              </p>
+            </article>
+            <article class="card step-card">
+              <span class="step-number">02</span>
+              <h3>Generate candidate latents</h3>
+              <p>
+                A one-step generator maps Gaussian noise to latent samples. The drift module then updates those samples toward the
+                empirical data distribution.
+              </p>
+            </article>
+            <article class="card step-card">
+              <span class="step-number">03</span>
+              <h3>Fit an ICNN potential</h3>
+              <p>
+                The learned map is <span class="math">T<sub>ω</sub>(z)=∇ψ<sub>ω</sub>(z)</span>. Convexity is preserved with
+                non-negative cascade weights and positive semidefinite quadratic injections.
+              </p>
+            </article>
+            <article class="card step-card">
+              <span class="step-number">04</span>
+              <h3>Compare against OT and kernel drift</h3>
+              <p>
+                We compare kernel drift, direct Sinkhorn barycentric drift, and NPF/ICNN regression-to-target drift using sliced-W2,
+                moment gaps, and decoded sample grids.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="results">
+        <div class="shell">
+          <div class="section-heading split">
+            <div>
+              <p class="section-kicker">Preliminary results</p>
+              <h2>6D MNIST latent comparison</h2>
+            </div>
+            <p>
+              Lower is better for SW2², mean-gap, std-gap, and ∥V<sub>eval</sub>∥². The table is loaded from
+              <code>static/data/results.json</code>, so it is easy to update after final experiments.
+            </p>
+          </div>
+
+          <div class="results-layout">
+            <article class="card figure-card">
+              <div class="figure-header">
+                <h3>Decoded samples across methods</h3>
+                <p>Replace this placeholder with your final MNIST grid or copy a real image to the same path.</p>
+              </div>
+              <img src="./static/images/mnist-samples-placeholder.svg" alt="Placeholder grid comparing kernel, OT-direct, and NPF decoded MNIST samples." />
+            </article>
+
+            <article class="card chart-card">
+              <div class="figure-header">
+                <h3>SW2² comparison</h3>
+                <p>Kernel remains the best baseline in the current 6D regime.</p>
+              </div>
+              <div id="sw2-chart" class="chart" role="img" aria-label="Bar chart of final SW2 squared values for each method."></div>
+            </article>
+          </div>
+
+          <div class="table-wrap card">
+            <table id="metrics-table">
+              <caption>Final evaluation after 3000 outer steps in 6D MNIST latent space.</caption>
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th>SW2² ↓</th>
+                  <th>Mean gap ↓</th>
+                  <th>Std gap ↓</th>
+                  <th>∥V<sub>eval</sub>∥² ↓</th>
+                  <th>Takeaway</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="callout honest">
+            <strong>Honest status.</strong>
+            NPF/ICNN is stable and reaches OT-direct-like quality on the diagnostic drift norm, but it does not yet beat the kernel
+            baseline on SW2². This is useful: the fixes make the remaining NPF-vs-Sinkhorn gap informative rather than a collapse artifact.
+          </div>
+        </div>
+      </section>
+
+      <section class="section tinted" id="diagnostics">
+        <div class="shell">
+          <div class="section-heading">
+            <p class="section-kicker">Diagnostics</p>
+            <h2>Five silent failure modes we fixed</h2>
+            <p>
+              The initial implementation looked good under the old diagnostic but produced collapsed samples. These fixes make the
+              evaluation collapse-aware and the ICNN drift numerically meaningful.
+            </p>
+          </div>
+          <div class="fix-grid">
+            <article class="card fix-card">
+              <h3>Selection metric collapse</h3>
+              <p>Replaced ∥V<sub>eval</sub>∥² selection with sliced-W2, which penalizes collapse onto the data mean.</p>
+            </article>
+            <article class="card fix-card">
+              <h3>Diagonal-only moments</h3>
+              <p>Replaced per-axis moment matching with a full covariance penalty to catch off-axis low-rank collapse.</p>
+            </article>
+            <article class="card fix-card">
+              <h3>Persistent inner Adam</h3>
+              <p>Reset inner Adam per outer batch so momentum from noisy Sinkhorn targets does not leak across objectives.</p>
+            </article>
+            <article class="card fix-card">
+              <h3>Smoothed inner target</h3>
+              <p>Kept regression as the stable default and implemented a semi-dual + cycle-consistency alternative as opt-in.</p>
+            </article>
+            <article class="card fix-card">
+              <h3>Identity-init tightening</h3>
+              <p>Shrunk the live cascade at initialization and lowered the quadratic Hessian floor so the cascade can bend early.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="ablations">
+        <div class="shell two-column align-start">
+          <div>
+            <p class="section-kicker">Ablations</p>
+            <h2>Capacity and optimization sensitivity</h2>
+            <p class="prose">
+              Use this area for width/depth sweeps, inner-step ablations, or learning-rate sensitivity. The included image is a
+              placeholder so the page is complete even before final plots are copied in.
+            </p>
+          </div>
+          <article class="card figure-card">
+            <img src="./static/images/ablation-placeholder.svg" alt="Placeholder ablation heatmap." />
+          </article>
+        </div>
+      </section>
+
+      <section class="section tinted" id="next">
+        <div class="shell">
+          <div class="section-heading">
+            <p class="section-kicker">Next steps</p>
+            <h2>What remains for the final submission</h2>
+          </div>
+          <div class="next-grid">
+            <article class="card next-card">
+              <h3>Unblock the inner loop</h3>
+              <p>Run fixed-compute ablations over inner steps, inner learning rate, and outer steps; test warm-starting ψ across batches.</p>
+            </article>
+            <article class="card next-card">
+              <h3>Stabilize the semi-dual</h3>
+              <p>Add spectral normalization or an R1-style gradient penalty before investing heavily in the Makkuva semi-dual variant.</p>
+            </article>
+            <article class="card next-card">
+              <h3>Scale beyond MNIST</h3>
+              <p>Move to higher-dimensional pretrained VAE latents and report FID, wall-clock cost, and qualitative grids at matched compute.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="team">
+        <div class="shell">
+          <div class="section-heading split">
+            <div>
+              <p class="section-kicker">Team</p>
+              <h2>Contributors</h2>
+            </div>
+            <p>Edit the contribution bullets once your final division of work is fixed.</p>
+          </div>
+          <div class="team-grid">
+            <article class="card person-card">
+              <h3>Quentin Chappuis</h3>
+              <p>Website, diagnostics narrative, evaluation presentation. <span class="todo">Edit contribution.</span></p>
+            </article>
+            <article class="card person-card">
+              <h3>Johan I. A. Bordet</h3>
+              <p>Model implementation and experiments. <span class="todo">Edit contribution.</span></p>
+            </article>
+            <article class="card person-card">
+              <h3>Satyam Chauhan</h3>
+              <p>Baselines, metrics, and result analysis. <span class="todo">Edit contribution.</span></p>
+            </article>
+            <article class="card person-card">
+              <h3>Alireza Abdollahpoorrostam</h3>
+              <p>Repository owner, model experiments, and report integration. <span class="todo">Edit contribution.</span></p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="shell footer-inner">
+        <p>Convex-Potential Drift Fields · CS-503 Final Project</p>
+        <a href="#top">Back to top ↑</a>
+      </div>
+    </footer>
+
+    <script src="./static/js/main.js"></script>
+  </body>
+</html>

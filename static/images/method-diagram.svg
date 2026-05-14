@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" role="img" aria-labelledby="title desc">
+  <title id="title">Drifting ICNN method diagram</title>
+  <desc id="desc">A pipeline from Gaussian noise through generator, drift, ICNN potential, and decoded samples.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#10182d"/><stop offset="1" stop-color="#080d1a"/></linearGradient>
+    <linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#74e0d6"/><stop offset="1" stop-color="#9b8cff"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="20" stdDeviation="20" flood-opacity="0.22"/></filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#74e0d6"/></marker>
+  </defs>
+  <rect width="900" height="620" rx="34" fill="url(#bg)"/>
+  <circle cx="770" cy="80" r="160" fill="#9b8cff" opacity="0.13"/>
+  <circle cx="150" cy="520" r="210" fill="#74e0d6" opacity="0.12"/>
+
+  <g font-family="Inter, system-ui, sans-serif" filter="url(#shadow)">
+    <g transform="translate(50 86)">
+      <rect width="170" height="132" rx="24" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.16)"/>
+      <text x="85" y="45" text-anchor="middle" fill="#74e0d6" font-size="15" font-weight="800">Noise</text>
+      <text x="85" y="83" text-anchor="middle" fill="#f4f7fb" font-size="34" font-weight="900">ε</text>
+      <text x="85" y="108" text-anchor="middle" fill="#aab7ce" font-size="13">Gaussian input</text>
+    </g>
+    <path d="M230 152 H310" stroke="#74e0d6" stroke-width="3" marker-end="url(#arrow)" fill="none"/>
+    <g transform="translate(320 86)">
+      <rect width="210" height="132" rx="24" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.16)"/>
+      <text x="105" y="45" text-anchor="middle" fill="#74e0d6" font-size="15" font-weight="800">Generator</text>
+      <text x="105" y="78" text-anchor="middle" fill="#f4f7fb" font-size="30" font-weight="900">fθ(ε)</text>
+      <text x="105" y="108" text-anchor="middle" fill="#aab7ce" font-size="13">6D latent sample</text>
+    </g>
+    <path d="M540 152 H620" stroke="#74e0d6" stroke-width="3" marker-end="url(#arrow)" fill="none"/>
+    <g transform="translate(630 86)">
+      <rect width="220" height="132" rx="24" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.16)"/>
+      <text x="110" y="45" text-anchor="middle" fill="#74e0d6" font-size="15" font-weight="800">Drift update</text>
+      <text x="110" y="78" text-anchor="middle" fill="#f4f7fb" font-size="29" font-weight="900">x + Vω(x)</text>
+      <text x="110" y="108" text-anchor="middle" fill="#aab7ce" font-size="13">transport direction</text>
+    </g>
+
+    <g transform="translate(155 330)">
+      <rect width="590" height="170" rx="28" fill="rgba(255,255,255,0.085)" stroke="rgba(255,255,255,0.16)"/>
+      <text x="295" y="43" text-anchor="middle" fill="#74e0d6" font-size="16" font-weight="900">Input-convex neural potential</text>
+      <text x="295" y="88" text-anchor="middle" fill="#f4f7fb" font-size="36" font-weight="900">Tω(z) = ∇ψω(z)</text>
+      <text x="295" y="125" text-anchor="middle" fill="#aab7ce" font-size="15">positive cascade weights · PSD quadratic injections · identity-aware initialization</text>
+    </g>
+    <path d="M740 228 C740 278 520 280 520 325" stroke="#74e0d6" stroke-width="3" marker-end="url(#arrow)" fill="none" opacity="0.9"/>
+
+    <g transform="translate(295 548)">
+      <rect width="310" height="42" rx="21" fill="url(#a)" opacity="0.92"/>
+      <text x="155" y="27" text-anchor="middle" fill="#03121a" font-size="15" font-weight="900">Decode for visualization</text>
+    </g>
+  </g>
+</svg>

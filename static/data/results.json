@@ -1,0 +1,30 @@
+{
+  "experiment": "6D MNIST latent, final evaluation after 3000 outer steps",
+  "selection": "Best entropic regularization epsilon_ent = 0.05, selected via sliced-W2",
+  "metrics": [
+    {
+      "method": "Kernel drift",
+      "sw2": 0.0196,
+      "meanGap": 0.076,
+      "stdGap": 0.050,
+      "vEval": 0.161,
+      "takeaway": "Best diversity in the current 6D regime."
+    },
+    {
+      "method": "OT-direct",
+      "sw2": 0.0500,
+      "meanGap": 0.074,
+      "stdGap": 0.188,
+      "vEval": 0.083,
+      "takeaway": "No longer collapsed after metric and covariance fixes."
+    },
+    {
+      "method": "NPF / ICNN regression",
+      "sw2": 0.0602,
+      "meanGap": 0.078,
+      "stdGap": 0.208,
+      "vEval": 0.083,
+      "takeaway": "Competitive with OT-direct, still inner-loop limited."
+    }
+  ]
+}

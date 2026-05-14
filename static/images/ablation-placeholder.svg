@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 520" role="img" aria-labelledby="title desc">
+  <title id="title">Ablation placeholder</title>
+  <desc id="desc">A placeholder heatmap for ICNN width and depth ablation.</desc>
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#10182d"/><stop offset="1" stop-color="#080d1a"/></linearGradient><linearGradient id="cell" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#74e0d6"/><stop offset="1" stop-color="#9b8cff"/></linearGradient></defs>
+  <rect width="840" height="520" rx="30" fill="url(#bg)"/>
+  <g font-family="Inter, system-ui, sans-serif">
+    <text x="40" y="60" fill="#f4f7fb" font-size="28" font-weight="900">Width/depth ablation</text>
+    <text x="40" y="92" fill="#aab7ce" font-size="16">Replace with your final ablation heatmap or convergence curve.</text>
+    <g transform="translate(156 136)">
+      <g fill="#aab7ce" font-size="14" font-weight="700"><text x="52" y="-18" text-anchor="middle">64</text><text x="142" y="-18" text-anchor="middle">128</text><text x="232" y="-18" text-anchor="middle">256</text><text x="322" y="-18" text-anchor="middle">512</text></g>
+      <g fill="#aab7ce" font-size="14" font-weight="700"><text x="-24" y="52" text-anchor="end">2 layers</text><text x="-24" y="142" text-anchor="end">3 layers</text><text x="-24" y="232" text-anchor="end">5 layers</text></g>
+      <g opacity="0.94">
+        <rect x="0" y="0" width="74" height="74" rx="14" fill="url(#cell)" opacity="0.35"/><rect x="90" y="0" width="74" height="74" rx="14" fill="url(#cell)" opacity="0.52"/><rect x="180" y="0" width="74" height="74" rx="14" fill="url(#cell)" opacity="0.75"/><rect x="270" y="0" width="74" height="74" rx="14" fill="url(#cell)" opacity="0.66"/>
+        <rect x="0" y="90" width="74" height="74" rx="14" fill="url(#cell)" opacity="0.44"/><rect x="90" y="90" width="74" height="74" rx="14" fill="url(#cell)" opacity="0.86"/><rect x="180" y="90" width="74" height="74" rx="14" fill="url(#cell)" opacity="0.68"/><rect x="270" y="90" width="74" height="74" rx="14" fill="url(#cell)" opacity="0.48"/>
+        <rect x="0" y="180" width="74" height="74" rx="14" fill="url(#cell)" opacity="0.38"/><rect x="90" y="180" width="74" height="74" rx="14" fill="url(#cell)" opacity="0.55"/><rect x="180" y="180" width="74" height="74" rx="14" fill="url(#cell)" opacity="0.42"/><rect x="270" y="180" width="74" height="74" rx="14" fill="url(#cell)" opacity="0.28"/>
+      </g>
+    </g>
+    <g transform="translate(590 160)" fill="#aab7ce" font-size="15">
+      <text x="0" y="0" fill="#74e0d6" font-weight="900">Suggested final plots</text>
+      <text x="0" y="36">• SW2² over training</text>
+      <text x="0" y="66">• inner loss curves</text>
+      <text x="0" y="96">• width/depth heatmap</text>
+      <text x="0" y="126">• runtime per outer step</text>
+    </g>
+  </g>
+</svg>
