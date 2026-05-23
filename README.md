@@ -46,6 +46,12 @@ The workflow deploys the full static site from the repository root.
 - `static/css/styles.css`: visual style.
 - `static/js/main.js`: nav behavior, chart rendering, result-table rendering.
 
+## Interactive digit demo
+
+The 6D MNIST widget currently serves from `static/data/NPF_MNIST_sample_bank.json` and will fall back to that bank if a live generation endpoint is unavailable.
+
+To connect a checkpoint-backed generator later, set `window.DIGIT_GENERATION_ENDPOINT` before loading `static/js/main.js` and return JSON with an `imageUrl`, `image`, `dataUrl`, or `sample` field.
+
 ## Theme
 
 The site defaults to the light theme. Visitors can switch between light and dark mode with the toggle in the navigation bar; their choice is saved in `localStorage`.

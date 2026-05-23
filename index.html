@@ -217,6 +217,43 @@
         </div>
       </section>
 
+      <!-- Interactive digit generation widget -->
+      <section id="interactive" class="section">
+        <div class="shell">
+          <div class="section-heading">
+            <p class="section-kicker">Interactive demo</p>
+            <h2>Try It: Class-Conditional Generation</h2>
+            <p>
+              Select a digit and click <strong>Generate</strong>. The widget currently
+              serves samples from our pre-generated bank of 100 images per class, and
+              it is wired so a checkpoint-backed generation endpoint can be plugged in
+              later without changing the interface.
+            </p>
+          </div>
+
+          <div class="widget-card">
+            <!-- Digit selector -->
+            <div class="digit-selector" role="group" aria-label="Select digit to generate">
+              <!-- JS fills these in -->
+            </div>
+
+            <!-- Generate button -->
+            <button class="btn-generate" id="btn-generate" aria-label="Generate a sample">
+              Generate
+            </button>
+
+            <!-- Output -->
+            <div class="widget-output" id="widget-output" aria-live="polite">
+              <div class="output-placeholder">
+                <span>Select a digit and click Generate</span>
+              </div>
+            </div>
+
+            <p class="widget-caption" id="widget-caption"></p>
+          </div>
+        </div>
+      </section>
+
       <section class="section tinted" id="diagnostics">
         <div class="shell">
           <div class="section-heading">

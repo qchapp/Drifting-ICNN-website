@@ -152,3 +152,162 @@ loadResults()
       chart.innerHTML = '<p class="prose">Could not load static/data/results.json. Check the file path.</p>';
     }
   });
+
+
+// ── Interactive digit widget ──────────────────────────────────────────────
+
+const SAMPLE_BANK_URL = './static/data/NPF_MNIST_sample_bank.json';
+const DIGIT_GENERATION_ENDPOINT = document.querySelector('#interactive')?.dataset.generationEndpoint || window.DIGIT_GENERATION_ENDPOINT || '';
+
+async function loadSampleBank() {
+  const response = await fetch(`${SAMPLE_BANK_URL}?v=2`, { cache: 'no-store' });
+  if (!response.ok) throw new Error(`Could not load ${SAMPLE_BANK_URL}: ${response.status}`);
+  return response.json();
+}
+
+async function generateDigitSample(digit) {
+  if (!DIGIT_GENERATION_ENDPOINT) return null;
+
+  const response = await fetch(DIGIT_GENERATION_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ digit: Number(digit) }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Could not generate digit ${digit}: ${response.status}`);
+  }
+
+  const payload = await response.json();
+  const imageUrl = payload.imageUrl || payload.image || payload.dataUrl || payload.sample || null;
+  if (!imageUrl) {
+    throw new Error('Generation endpoint returned no image URL or data URI.');
+  }
+
+  return {
+    imageUrl,
+    caption: payload.caption || `Generated digit ${digit}`,
+  };
+}
+
+function initWidget(sampleBank) {
+  const selector  = document.querySelector('.digit-selector');
+  const btnGen    = document.getElementById('btn-generate');
+  const output    = document.getElementById('widget-output');
+  const caption   = document.getElementById('widget-caption');
+
+  if (!selector || !btnGen || !output) return;
+
+  const placeholder = output.querySelector('.output-placeholder');
+  let selectedDigit = null;
+  let isGenerating = false;
+  // Track which index was last shown per digit so we never repeat twice in a row
+  const lastShown = {};
+
+  function setOutputMessage(message) {
+    output.innerHTML = '';
+    const messageNode = document.createElement('div');
+    messageNode.className = 'output-placeholder';
+    messageNode.textContent = message;
+    output.appendChild(messageNode);
+  }
+
+  function setCaption(text) {
+    if (caption) {
+      caption.textContent = text;
+    }
+  }
+
+  function renderImage(imageUrl, altText, captionText) {
+    const img = document.createElement('img');
+    img.src = imageUrl;
+    img.alt = altText;
+    output.innerHTML = '';
+    output.appendChild(img);
+    setCaption(captionText);
+  }
+
+  function updateButtonState() {
+    btnGen.disabled = selectedDigit === null || isGenerating;
+    btnGen.textContent = isGenerating ? 'Generating...' : 'Generate';
+  }
+
+  // Build digit buttons 0-9
+  for (let d = 0; d <= 9; d++) {
+    const btn = document.createElement('button');
+    btn.className = 'digit-btn';
+    btn.textContent = String(d);
+    btn.setAttribute('aria-label', `Select digit ${d}`);
+    btn.addEventListener('click', () => {
+      selector.querySelectorAll('.digit-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedDigit = d;
+      updateButtonState();
+    });
+    selector.appendChild(btn);
+  }
+
+  if (placeholder) {
+    placeholder.textContent = DIGIT_GENERATION_ENDPOINT
+      ? 'Select a digit and generate a live sample.'
+      : 'Select a digit and click Generate.';
+  }
+
+  updateButtonState();
+
+  btnGen.addEventListener('click', async () => {
+    if (selectedDigit === null) return;
+
+    isGenerating = true;
+    updateButtonState();
+
+    try {
+      if (DIGIT_GENERATION_ENDPOINT) {
+        try {
+          const liveSample = await generateDigitSample(selectedDigit);
+          if (liveSample) {
+            renderImage(liveSample.imageUrl, `Generated image of digit ${selectedDigit}`, liveSample.caption);
+            return;
+          }
+        } catch (error) {
+          console.warn('Live generation failed, falling back to the pre-generated bank.', error);
+        }
+      }
+
+      const pool = sampleBank[String(selectedDigit)] || sampleBank[selectedDigit];
+      if (!pool || pool.length === 0) {
+        throw new Error(`No samples available for digit ${selectedDigit}.`);
+      }
+
+      // Pick a random index different from the last one shown.
+      let idx;
+      do {
+        idx = Math.floor(Math.random() * pool.length);
+      } while (pool.length > 1 && idx === lastShown[selectedDigit]);
+      lastShown[selectedDigit] = idx;
+
+      renderImage(
+        pool[idx],
+        `Pre-generated sample of digit ${selectedDigit}`,
+        `Sample ${idx + 1} / ${pool.length} — digit "${selectedDigit}" — NPF / ICNN conditional generator`
+      );
+    } catch (error) {
+      console.error(error);
+      setOutputMessage('Could not generate a sample. Check the data path or generation endpoint.');
+      setCaption('');
+    } finally {
+      isGenerating = false;
+      updateButtonState();
+    }
+  });
+}
+
+loadSampleBank()
+  .then(initWidget)
+  .catch(err => {
+    console.warn('Sample bank not available:', err);
+    const placeholder = document.querySelector('.output-placeholder');
+    if (placeholder) placeholder.textContent = 'Sample bank not yet available.';
+  });
