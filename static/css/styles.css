@@ -990,3 +990,106 @@ tbody tr.best td:first-child::after {
     min-width: 980px;
   }
 }
+
+/* Generation demo refinements: keep the original widget but map it to this site's design tokens. */
+.widget-card.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.35rem;
+  width: 100%;
+  max-width: 660px;
+  margin: 0;
+  padding: clamp(1.25rem, 3vw, 2.2rem);
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.digit-selector {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.digit-btn {
+  min-width: 0;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--button-bg);
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+}
+
+.digit-btn:hover,
+.digit-btn:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: var(--button-hover-bg);
+}
+
+.digit-btn.selected {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-color: transparent;
+  color: var(--primary-button-text);
+  transform: scale(1.08);
+}
+
+.btn-generate {
+  min-height: 46px;
+  padding: 0 1.35rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, var(--accent), #b3fff5);
+  color: var(--primary-button-text);
+  font-size: 1rem;
+  font-weight: 850;
+  cursor: pointer;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.btn-generate:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-generate:active { transform: scale(0.98); }
+.btn-generate:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+.widget-output {
+  width: min(220px, 58vw);
+  height: min(220px, 58vw);
+  border-radius: 28px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 42%, var(--line));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--figure-bg);
+}
+
+.widget-output img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  animation: pop-in 180ms ease;
+}
+
+.output-placeholder,
+.widget-caption {
+  color: var(--muted);
+  font-size: 0.92rem;
+  text-align: center;
+}
+
+.widget-caption {
+  min-height: 1.3em;
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .digit-selector {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}

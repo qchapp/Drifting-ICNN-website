@@ -38,3 +38,8 @@ Then open `http://localhost:8000`.
 - Edit `static/data/results.json` to update the metrics table and quality chart.
 - Replace the figure PNGs in `static/images/` with newer exports if final experiments change.
 - Keep image filenames the same unless you also update the corresponding paths in `index.html`.
+
+
+## Interactive generation demo
+
+The page includes the class-conditional MNIST generation widget from the teammate commit. Keep `static/data/NPF_MNIST_sample_bank.json` in the repository; it is intentionally not overwritten by the update bundle if it already exists. The widget can also use a live endpoint later via `window.DIGIT_GENERATION_ENDPOINT`.

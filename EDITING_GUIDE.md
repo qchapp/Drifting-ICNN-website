@@ -25,3 +25,6 @@ The website now follows the final webpage guideline sections:
 - `method-diagram.svg`
 
 The interface, light/dark toggle, responsive layout, and GitHub Pages workflow are already wired.
+
+
+Generation widget: keep `static/data/NPF_MNIST_sample_bank.json` from the existing repository. The JavaScript will load it automatically and fall back to a message if it is missing.

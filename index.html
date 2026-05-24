@@ -41,6 +41,7 @@
           <a href="#related-work">Related work</a>
           <a href="#method">Method</a>
           <a href="#experiments">Experiments</a>
+          <a href="#interactive">Generation</a>
           <a href="#limitations">Limitations</a>
           <a href="#team">Team</a>
         </div>
@@ -298,7 +299,42 @@
         </div>
       </section>
 
-      <section class="section tinted" id="diagnostics">
+
+      <section id="interactive" class="section tinted">
+        <div class="shell two-column align-start">
+          <div>
+            <p class="section-kicker">Interactive generation</p>
+            <h2>Class-conditional MNIST samples</h2>
+            <div class="prose">
+              <p>
+                This section preserves the class-conditional generation demo added by the team. Select a digit and click
+                <strong>Generate</strong>: the widget serves samples from the pre-generated
+                <code>static/data/NPF_MNIST_sample_bank.json</code> bank, with a graceful fallback if a live generation endpoint is added later.
+              </p>
+              <p>
+                The demo is intentionally lightweight for GitHub Pages: it does not run the model in the browser. Instead, it displays generated CCNPF/ICNN samples that were exported ahead of time, making the final webpage reproducible and fast to load.
+              </p>
+            </div>
+          </div>
+
+          <div class="widget-card card">
+            <div class="digit-selector" role="group" aria-label="Select digit to generate">
+              <!-- Filled by static/js/main.js -->
+            </div>
+            <button class="btn-generate" id="btn-generate" aria-label="Generate a sample" disabled>
+              Generate
+            </button>
+            <div class="widget-output" id="widget-output" aria-live="polite">
+              <div class="output-placeholder">
+                <span>Select a digit and click Generate</span>
+              </div>
+            </div>
+            <p class="widget-caption" id="widget-caption"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="diagnostics">
         <div class="shell">
           <div class="section-heading">
             <p class="section-kicker">Diagnostics</p>
@@ -367,7 +403,7 @@
             </article>
             <article class="card person-card">
               <h3>Johan I. A. Bordet</h3>
-              <p>ICNN/NPF implementation support, model debugging, and analysis of optimization stability.</p>
+              <p>ICNN/NPF implementation support, model debugging, optimization-stability analysis, and the class-conditional generation demo.</p>
             </article>
             <article class="card person-card">
               <h3>Satyam Chauhan</h3>
