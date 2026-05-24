@@ -332,7 +332,12 @@
       </section>
 
 
-      <section id="interactive" class="section tinted">
+      <section
+        id="interactive"
+        class="section tinted"
+        data-generation-endpoint="https://huggingface.co/spaces/JohanchoDeCuba/drifting-icnn-mnist/"
+        data-generation-method="npf"
+      >
         <div class="shell two-column align-start generation-layout">
           <div class="generation-copy">
             <p class="section-kicker">Interactive generation</p>
@@ -342,7 +347,7 @@
                 Explore qualitative outputs from our class-conditional CCNPF/ICNN MNIST generator. Choose a target digit from 0 to 9, then press <strong>Generate</strong> to display one generated sample for that class.
               </p>
               <p>
-                The demo makes the generator behavior easy to inspect directly on the project page. Repeated clicks show different saved samples from the same class, so the comparison remains reproducible and fast on GitHub Pages.
+                The demo makes the generator behavior easy to inspect directly on the project page. When the live Space endpoint is configured, repeated clicks trigger a fresh generation; otherwise the page falls back to saved samples so the demo still works offline.
               </p>
             </div>
           </div>
@@ -351,7 +356,7 @@
             <div class="widget-topline">
               <p class="widget-kicker">CCNPF / ICNN sampler</p>
               <h3>Choose a digit</h3>
-              <p class="widget-intro">Generate a saved MNIST sample from the selected class.</p>
+              <p class="widget-intro">Generate a live MNIST sample when the Space endpoint is configured, or a saved fallback sample otherwise.</p>
             </div>
 
             <div class="digit-selector-panel">
