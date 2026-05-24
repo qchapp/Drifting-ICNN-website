@@ -307,21 +307,19 @@
             <h2>Class-conditional MNIST samples</h2>
             <div class="prose">
               <p>
-                This demo shows samples exported from our class-conditional CCNPF/ICNN MNIST generator. Choose a target digit from 0 to 9, then press <strong>Generate</strong> to draw one saved sample for that class.
+                Explore qualitative outputs from our class-conditional CCNPF/ICNN MNIST generator. Choose a target digit from 0 to 9, then press <strong>Generate</strong> to display one generated sample for that class.
               </p>
               <p>
-                The goal is to make the qualitative result easy to inspect directly on the project page. Each click displays another generated digit from the saved sample bank used for the final webpage, so the demo stays reproducible and fast on GitHub Pages.
+                The demo makes the generator behavior easy to inspect directly on the project page. Repeated clicks show different saved samples from the same class, so the comparison remains reproducible and fast on GitHub Pages.
               </p>
             </div>
           </div>
 
           <div class="widget-card card generation-widget">
             <div class="widget-topline">
-              <div>
-                <p class="widget-kicker">MNIST sampler</p>
-                <h3>Pick a target digit</h3>
-              </div>
-              <span class="sample-pill">CCNPF / ICNN</span>
+              <p class="widget-kicker">CCNPF / ICNN sampler</p>
+              <h3>Choose a digit</h3>
+              <p class="widget-intro">Generate a saved MNIST sample from the selected class.</p>
             </div>
 
             <div class="digit-selector-panel">
@@ -330,12 +328,9 @@
               </div>
             </div>
 
-            <div class="widget-action-row">
-              <button class="btn-generate" id="btn-generate" aria-label="Generate a sample" disabled>
-                Generate sample
-              </button>
-              <p>Each click samples a saved output for the selected class.</p>
-            </div>
+            <button class="btn-generate" id="btn-generate" aria-label="Generate a sample" disabled>
+              Generate sample
+            </button>
 
             <div class="widget-preview">
               <div class="widget-output" id="widget-output" aria-live="polite">
