@@ -901,3 +901,92 @@ tbody tr.best td:first-child::after {
     font-size: 0.92rem;
   }
 }
+/* ── Final webpage additions ───────────────────────────────────── */
+.hero-figure-wrap {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+}
+
+.hero-figure-wrap figcaption {
+  margin: 0.8rem 0.35rem 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.method-grid.three {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.method-figure-card {
+  margin-top: 1rem;
+  padding: 1.2rem;
+  overflow: hidden;
+}
+
+.method-figure-card img {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--figure-bg);
+}
+
+.figure-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.figure-card.wide img.figure-image,
+.figure-card.compact img.figure-image {
+  width: calc(100% - 2.4rem);
+  margin: 0 1.2rem 1.2rem;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: #ffffff;
+}
+
+.figure-card.compact img.figure-image {
+  object-fit: contain;
+}
+
+.metrics-table-card {
+  margin-top: 1rem;
+}
+
+.results-layout .compact {
+  min-height: 100%;
+}
+
+.prose ul {
+  padding-left: 1.2rem;
+  margin-top: 0;
+}
+
+.prose li {
+  margin-bottom: 0.65rem;
+}
+
+@media (max-width: 1080px) {
+  .method-grid.three {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .figure-header {
+    padding: 1rem 1rem 0;
+  }
+
+  .figure-card.wide img.figure-image,
+  .figure-card.compact img.figure-image {
+    width: calc(100% - 2rem);
+    margin: 0 1rem 1rem;
+    border-radius: 16px;
+  }
+
+  table {
+    min-width: 980px;
+  }
+}

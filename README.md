@@ -1,58 +1,40 @@
-# Convex-Potential Drift Fields website
+# Convex-Potential Drift Fields Website
 
-Static website for the CS-503 final project page.
+Static GitHub Pages website for the CS-503 final project **Convex-Potential Drift Fields: Replacing Kernels with Input-Convex Neural Networks in Drifting Generative Models**.
 
-Live site after deployment:
-
-```text
-https://qchapp.github.io/Drifting-ICNN-website/
-```
-
-Research code repository:
+## Structure
 
 ```text
-https://github.com/alirezaabdollahpour/Drifting-ICNN
+.
+├── index.html
+├── static/
+│   ├── css/styles.css
+│   ├── js/main.js
+│   ├── data/results.json
+│   └── images/
+├── .github/workflows/pages.yml
+└── .nojekyll
 ```
 
 ## Local preview
 
-Because the page loads `static/data/results.json`, use a local server instead of opening `index.html` directly:
+Any static file server works. For example:
 
 ```bash
-python3 -m http.server 8000
+python -m http.server 8000
 ```
 
-Then open:
+Then open `http://localhost:8000`.
 
-```text
-http://localhost:8000
-```
+## Deployment
 
-## Deploy on GitHub Pages
+1. Push these files to the `main` branch of the GitHub Pages repository.
+2. In GitHub, go to `Settings -> Pages`.
+3. Set `Build and deployment -> Source` to `GitHub Actions`.
+4. Each push to `main` will deploy the site.
 
-This repo includes `.github/workflows/pages.yml`. Push to `main`, then set:
+## Updating results
 
-```text
-Settings → Pages → Build and deployment → Source → GitHub Actions
-```
-
-The workflow deploys the full static site from the repository root.
-
-## What to edit
-
-- `index.html`: project text, links, team contributions.
-- `static/data/results.json`: metric values used by the table and bar chart.
-- `static/images/*.svg`: replace placeholders with final PNG/SVG figures or update paths in `index.html`.
-- `static/css/styles.css`: visual style.
-- `static/js/main.js`: nav behavior, chart rendering, result-table rendering.
-
-## Interactive digit demo
-
-The 6D MNIST widget currently serves from `static/data/NPF_MNIST_sample_bank.json` and will fall back to that bank if a live generation endpoint is unavailable.
-
-To connect a checkpoint-backed generator later, set `window.DIGIT_GENERATION_ENDPOINT` before loading `static/js/main.js` and return JSON with an `imageUrl`, `image`, `dataUrl`, or `sample` field.
-
-## Theme
-
-The site defaults to the light theme. Visitors can switch between light and dark mode with the toggle in the navigation bar; their choice is saved in `localStorage`.
-
+- Edit `static/data/results.json` to update the metrics table and quality chart.
+- Replace the figure PNGs in `static/images/` with newer exports if final experiments change.
+- Keep image filenames the same unless you also update the corresponding paths in `index.html`.

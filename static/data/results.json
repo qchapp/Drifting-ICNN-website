@@ -1,30 +1,40 @@
 {
-  "experiment": "6D MNIST latent, final evaluation after 3000 outer steps",
-  "selection": "Best entropic regularization epsilon_ent = 0.05, selected via sliced-W2",
   "metrics": [
     {
-      "method": "Kernel drift",
-      "sw2": 0.0196,
-      "meanGap": 0.076,
-      "stdGap": 0.050,
-      "vEval": 0.161,
-      "takeaway": "Best diversity in the current 6D regime."
+      "method": "Kernel",
+      "sw2": 0.01579,
+      "classW2": 1.776,
+      "featureFid": 120.0,
+      "classAccuracy": 0.817,
+      "minClassAccuracy": 0.562,
+      "latentStdGap": 0.0719,
+      "runtimeSeconds": 0.040,
+      "qualityScore": 0.28,
+      "takeaway": "Fastest method; strong runtime baseline but weaker semantic fidelity."
     },
     {
       "method": "OT-direct",
-      "sw2": 0.0500,
-      "meanGap": 0.074,
-      "stdGap": 0.188,
-      "vEval": 0.083,
-      "takeaway": "No longer collapsed after metric and covariance fixes."
+      "sw2": 0.04885,
+      "classW2": 1.357,
+      "featureFid": 134.3,
+      "classAccuracy": 0.996,
+      "minClassAccuracy": 0.958,
+      "latentStdGap": 0.1853,
+      "runtimeSeconds": 0.198,
+      "qualityScore": 0.52,
+      "takeaway": "Best class transport and accuracy, but weaker FID and latent diversity."
     },
     {
-      "method": "NPF / ICNN regression",
-      "sw2": 0.0602,
-      "meanGap": 0.078,
-      "stdGap": 0.208,
-      "vEval": 0.083,
-      "takeaway": "Competitive with OT-direct, still inner-loop limited."
+      "method": "CCNPF",
+      "sw2": 0.01008,
+      "classW2": 1.400,
+      "featureFid": 87.95,
+      "classAccuracy": 0.940,
+      "minClassAccuracy": 0.792,
+      "latentStdGap": 0.0396,
+      "runtimeSeconds": 1.379,
+      "qualityScore": 0.88,
+      "takeaway": "Best aggregate quality and FID; computationally the most expensive."
     }
   ]
 }

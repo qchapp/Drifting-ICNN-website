@@ -1,49 +1,52 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" role="img" aria-labelledby="title desc">
-  <title id="title">Drifting ICNN method diagram</title>
-  <desc id="desc">A pipeline from Gaussian noise through generator, drift, ICNN potential, and decoded samples.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 420" role="img" aria-label="Drifting-ICNN method diagram">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#10182d"/><stop offset="1" stop-color="#080d1a"/></linearGradient>
-    <linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#74e0d6"/><stop offset="1" stop-color="#9b8cff"/></linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="20" stdDeviation="20" flood-opacity="0.22"/></filter>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#74e0d6"/></marker>
+    <linearGradient id="box" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.98"/>
+      <stop offset="1" stop-color="#edf7fa" stop-opacity="0.98"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#007d8a"/>
+      <stop offset="1" stop-color="#6554f2"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#007d8a" />
+    </marker>
+    <style>
+      .title{font:700 25px Inter,Arial,sans-serif;fill:#111827}.sub{font:500 17px Inter,Arial,sans-serif;fill:#516071}.math{font:700 26px Inter,Arial,sans-serif;fill:#007d8a}.small{font:600 15px Inter,Arial,sans-serif;fill:#516071}.box{fill:url(#box);stroke:rgba(15,23,42,.16);stroke-width:2}.arrow{stroke:#007d8a;stroke-width:4;fill:none;marker-end:url(#arrow)}
+    </style>
   </defs>
-  <rect width="900" height="620" rx="34" fill="url(#bg)"/>
-  <circle cx="770" cy="80" r="160" fill="#9b8cff" opacity="0.13"/>
-  <circle cx="150" cy="520" r="210" fill="#74e0d6" opacity="0.12"/>
+  <rect width="1180" height="420" rx="34" fill="#f7f9fc"/>
+  <circle cx="108" cy="78" r="118" fill="#007d8a" opacity="0.08"/>
+  <circle cx="1010" cy="335" r="148" fill="#6554f2" opacity="0.09"/>
 
-  <g font-family="Inter, system-ui, sans-serif" filter="url(#shadow)">
-    <g transform="translate(50 86)">
-      <rect width="170" height="132" rx="24" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.16)"/>
-      <text x="85" y="45" text-anchor="middle" fill="#74e0d6" font-size="15" font-weight="800">Noise</text>
-      <text x="85" y="83" text-anchor="middle" fill="#f4f7fb" font-size="34" font-weight="900">ε</text>
-      <text x="85" y="108" text-anchor="middle" fill="#aab7ce" font-size="13">Gaussian input</text>
-    </g>
-    <path d="M230 152 H310" stroke="#74e0d6" stroke-width="3" marker-end="url(#arrow)" fill="none"/>
-    <g transform="translate(320 86)">
-      <rect width="210" height="132" rx="24" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.16)"/>
-      <text x="105" y="45" text-anchor="middle" fill="#74e0d6" font-size="15" font-weight="800">Generator</text>
-      <text x="105" y="78" text-anchor="middle" fill="#f4f7fb" font-size="30" font-weight="900">fθ(ε)</text>
-      <text x="105" y="108" text-anchor="middle" fill="#aab7ce" font-size="13">6D latent sample</text>
-    </g>
-    <path d="M540 152 H620" stroke="#74e0d6" stroke-width="3" marker-end="url(#arrow)" fill="none"/>
-    <g transform="translate(630 86)">
-      <rect width="220" height="132" rx="24" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.16)"/>
-      <text x="110" y="45" text-anchor="middle" fill="#74e0d6" font-size="15" font-weight="800">Drift update</text>
-      <text x="110" y="78" text-anchor="middle" fill="#f4f7fb" font-size="29" font-weight="900">x + Vω(x)</text>
-      <text x="110" y="108" text-anchor="middle" fill="#aab7ce" font-size="13">transport direction</text>
-    </g>
+  <rect class="box" x="55" y="118" width="190" height="160" rx="24"/>
+  <text class="title" x="150" y="168" text-anchor="middle">Noise</text>
+  <text class="math" x="150" y="205" text-anchor="middle">ε ~ N(0,I)</text>
+  <text class="sub" x="150" y="238" text-anchor="middle">input seed</text>
 
-    <g transform="translate(155 330)">
-      <rect width="590" height="170" rx="28" fill="rgba(255,255,255,0.085)" stroke="rgba(255,255,255,0.16)"/>
-      <text x="295" y="43" text-anchor="middle" fill="#74e0d6" font-size="16" font-weight="900">Input-convex neural potential</text>
-      <text x="295" y="88" text-anchor="middle" fill="#f4f7fb" font-size="36" font-weight="900">Tω(z) = ∇ψω(z)</text>
-      <text x="295" y="125" text-anchor="middle" fill="#aab7ce" font-size="15">positive cascade weights · PSD quadratic injections · identity-aware initialization</text>
-    </g>
-    <path d="M740 228 C740 278 520 280 520 325" stroke="#74e0d6" stroke-width="3" marker-end="url(#arrow)" fill="none" opacity="0.9"/>
+  <path class="arrow" d="M250 198 H330"/>
 
-    <g transform="translate(295 548)">
-      <rect width="310" height="42" rx="21" fill="url(#a)" opacity="0.92"/>
-      <text x="155" y="27" text-anchor="middle" fill="#03121a" font-size="15" font-weight="900">Decode for visualization</text>
-    </g>
-  </g>
+  <rect class="box" x="342" y="118" width="220" height="160" rx="24"/>
+  <text class="title" x="452" y="160" text-anchor="middle">Generator</text>
+  <text class="math" x="452" y="198" text-anchor="middle">x = fθ(ε)</text>
+  <text class="sub" x="452" y="232" text-anchor="middle">6D whitened latent</text>
+
+  <path class="arrow" d="M568 198 H648"/>
+
+  <rect class="box" x="660" y="84" width="250" height="228" rx="24"/>
+  <text class="title" x="785" y="132" text-anchor="middle">Convex potential</text>
+  <text class="math" x="785" y="172" text-anchor="middle">Tω(x)=∇ψω(x)</text>
+  <text class="sub" x="785" y="208" text-anchor="middle">ICNN / CCNPF drift</text>
+  <text class="small" x="785" y="247" text-anchor="middle">convexity via non-negative</text>
+  <text class="small" x="785" y="270" text-anchor="middle">cascade weights + PSD terms</text>
+
+  <path class="arrow" d="M916 198 H990"/>
+
+  <rect class="box" x="1002" y="118" width="128" height="160" rx="24"/>
+  <text class="title" x="1066" y="165" text-anchor="middle">Decode</text>
+  <text class="math" x="1066" y="202" text-anchor="middle">z → y</text>
+  <text class="sub" x="1066" y="235" text-anchor="middle">MNIST</text>
+
+  <path d="M781 316 C760 360, 700 360, 672 318" stroke="url(#accent)" stroke-width="4" fill="none" stroke-dasharray="8 10"/>
+  <text class="small" x="726" y="383" text-anchor="middle">inner potential fitting + cycle-consistency diagnostics</text>
 </svg>

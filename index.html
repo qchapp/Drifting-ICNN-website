@@ -6,7 +6,7 @@
     <title>Convex-Potential Drift Fields | Drifting-ICNN</title>
     <meta
       name="description"
-      content="Final project webpage for Convex-Potential Drift Fields: replacing kernel drifts with ICNN Brenier potentials in drifting generative models."
+      content="Final CS-503 project webpage for Convex-Potential Drift Fields: replacing kernel drifts with ICNN Brenier potentials in drifting generative models."
     />
     <meta property="og:title" content="Convex-Potential Drift Fields" />
     <meta property="og:description" content="Replacing kernels with input-convex neural networks in drifting generative models." />
@@ -37,10 +37,11 @@
         </button>
         <div class="nav-links" id="nav-links">
           <a href="#abstract">Abstract</a>
+          <a href="#introduction">Introduction</a>
+          <a href="#related-work">Related work</a>
           <a href="#method">Method</a>
-          <a href="#results">Results</a>
-          <a href="#diagnostics">Diagnostics</a>
-          <a href="#next">Next</a>
+          <a href="#experiments">Experiments</a>
+          <a href="#limitations">Limitations</a>
           <a href="#team">Team</a>
         </div>
         <button class="theme-toggle" type="button" aria-label="Switch to dark theme" data-theme-toggle>
@@ -60,34 +61,37 @@
               Replacing kernel drift fields with gradients of input-convex neural networks in drifting generative models.
             </p>
             <p class="authors">
-              Alireza Abdollahpoorrostam · Johan I. A. Bordet · Satyam Chauhan · Quentin Chappuis
+              Quentin Chappuis · Johan I. A. Bordet · Satyam Chauhan · Alireza Abdollahpoorrostam
             </p>
             <div class="hero-actions" aria-label="Project links">
-              <a class="button primary" href="https://github.com/alirezaabdollahpour/Drifting-ICNN" target="_blank" rel="noreferrer">Project repository</a>
-              <a class="button" href="https://github.com/qchapp/Drifting-ICNN-website" target="_blank" rel="noreferrer">Website repository</a>
-              <a class="button ghost" href="#results">View results</a>
+              <a class="button primary" href="https://github.com/alirezaabdollahpour/Drifting-ICNN" target="_blank" rel="noreferrer">Code repository</a>
+              <a class="button" href="https://github.com/qchapp/Drifting-ICNN" target="_blank" rel="noreferrer">Website repository</a>
+              <a class="button ghost" href="#experiments">View experiments</a>
             </div>
           </div>
           <aside class="hero-panel" aria-label="Result summary">
             <div class="panel-glow" aria-hidden="true"></div>
             <div class="metric-stack" id="hero-metrics">
               <div class="mini-card">
-                <span class="mini-label">Best SW2²</span>
-                <strong>0.0196</strong>
-                <span>kernel baseline</span>
+                <span class="mini-label">Best SW2</span>
+                <strong>0.0101</strong>
+                <span>CCNPF</span>
               </div>
               <div class="mini-card">
-                <span class="mini-label">NPF / ICNN</span>
-                <strong>0.0602</strong>
-                <span>stable, not yet best</span>
+                <span class="mini-label">Best feature FID</span>
+                <strong>87.95</strong>
+                <span>CCNPF</span>
               </div>
               <div class="mini-card">
-                <span class="mini-label">Latent space</span>
-                <strong>6D</strong>
-                <span>frozen MNIST VAE</span>
+                <span class="mini-label">Runtime</span>
+                <strong>1.379s</strong>
+                <span>per CCNPF iter.</span>
               </div>
             </div>
-            <img class="hero-figure" src="./static/images/method-diagram.svg" alt="Diagram of Gaussian noise, a generator, latent drift, ICNN potential, and decoded samples." />
+            <figure class="hero-figure-wrap">
+              <img class="hero-figure" src="./static/images/mnist_quality_scorecard.png" alt="Normalized quality scorecard comparing Kernel, OT-direct, and CCNPF." />
+              <figcaption>CCNPF obtains the strongest mean normalized quality score, while paying a higher per-iteration runtime.</figcaption>
+            </figure>
           </aside>
         </div>
       </section>
@@ -96,21 +100,69 @@
         <div class="shell two-column">
           <div>
             <p class="section-kicker">Abstract</p>
-            <h2>Learning a drift as a Brenier map</h2>
+            <h2>A convex-potential replacement for kernel drift</h2>
           </div>
           <div class="prose large">
             <p>
-              The original drifting generative model uses a kernel-based drift field. We instead parameterize the drift as
-              <span class="math">V<sub>ω</sub>(z) = ∇ψ<sub>ω</sub>(z) − z</span>, where <span class="math">ψ<sub>ω</sub></span>
-              is an input-convex neural network. This makes the learned map compatible with the structure of optimal transport:
-              a convex potential whose gradient transports generated latents toward data latents.
+              Drifting generative models iteratively move generated samples toward the data distribution using a drift field. The original formulation uses a kernel-based drift, which is simple and fast but has limited structure. We study whether this drift can be replaced by the gradient of an input-convex neural network (ICNN), giving a map of the form <span class="math">T<sub>ω</sub>(z)=∇ψ<sub>ω</sub>(z)</span> and a drift <span class="math">V<sub>ω</sub>(z)=∇ψ<sub>ω</sub>(z)-z</span>.
             </p>
             <p>
-              Our current pipeline operates in a frozen, whitened 6D MNIST VAE latent space. Direct entropic OT and ICNN drifts
-              are now numerically stable after a set of diagnostic fixes. The honest preliminary picture is that the kernel baseline
-              still gives the best diversity in this 6D regime, while the NPF/ICNN drift is competitive with OT-direct but remains
-              bottlenecked by the inner optimization loop.
+              Our final experiments run in a frozen, whitened 6D MNIST VAE latent space and compare kernel drift, direct Sinkhorn OT drift, and our cycle-consistent neural potential field variant (CCNPF). CCNPF achieves the best equal-iteration Sliced W2 score (0.01008), best feature FID (87.95), and best latent standard-deviation gap (0.0396), but it is much slower than the kernel baseline: 1.379 seconds per iteration versus 0.040 seconds. The main conclusion is therefore not only that the convex-potential drift can improve sample quality on this benchmark, but also that its inner optimization cost remains the central limitation.
             </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section tinted" id="introduction">
+        <div class="shell two-column align-start">
+          <div>
+            <p class="section-kicker">Introduction</p>
+            <h2>Why replace the drift?</h2>
+          </div>
+          <div class="prose">
+            <p>
+              The problem we address is how to learn a drift field for a generator without relying on a hand-designed kernel. A kernel drift is attractive because it is inexpensive and stable, but the resulting vector field is not explicitly constrained to be the gradient of a convex transport potential. In contrast, optimal transport theory tells us that, under a quadratic cost, the optimal map has Brenier structure: it is the gradient of a convex function.
+            </p>
+            <p>
+              This motivates replacing the kernel drift by an ICNN potential. If the potential is convex in the latent variable, its gradient defines a structured transport map. The practical challenge is that this structure is useful only if the ICNN can be trained stably inside the generator loop. Much of our project therefore focuses on diagnostics: preventing collapse, making the selection metric meaningful, and separating true quality improvements from artifacts of the objective.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="related-work">
+        <div class="shell">
+          <div class="section-heading split">
+            <div>
+              <p class="section-kicker">Related work</p>
+              <h2>Kernel drifts, optimal transport, and ICNN maps</h2>
+            </div>
+            <p>
+              Our method sits between three families of ideas: drifting generative models, entropic optimal transport, and neural optimal transport maps parameterized by convex potentials.
+            </p>
+          </div>
+          <div class="method-grid three">
+            <article class="card step-card">
+              <span class="step-number">A</span>
+              <h3>Drifting generative models</h3>
+              <p>
+                The baseline method updates generated samples using a kernel drift. This gives a strong, fast reference point and remains important in our runtime-quality comparison.
+              </p>
+            </article>
+            <article class="card step-card">
+              <span class="step-number">B</span>
+              <h3>Entropic OT baselines</h3>
+              <p>
+                Direct OT uses a Sinkhorn plan and barycentric drift. It provides a principled transport target but is sensitive to entropic regularization and collapse-aware model selection.
+              </p>
+            </article>
+            <article class="card step-card">
+              <span class="step-number">C</span>
+              <h3>Input-convex neural maps</h3>
+              <p>
+                ICNN-based optimal transport learns convex potentials whose gradients define transport maps. Our contribution is to insert this idea into the drifting-generator loop and evaluate the tradeoff.
+              </p>
+            </article>
           </div>
         </div>
       </section>
@@ -121,87 +173,87 @@
             <p class="section-kicker">Method</p>
             <h2>From kernel drift to input-convex potential</h2>
             <p>
-              We keep the drifting-generator idea, but replace the hand-designed kernel field by a learned convex potential.
+              We keep the drifting-generator pipeline but replace the drift field by a learned convex potential and evaluate it against two baselines.
             </p>
           </div>
           <div class="method-grid">
             <article class="card step-card">
               <span class="step-number">01</span>
-              <h3>Encode data into a stable latent space</h3>
+              <h3>Encode MNIST into a stable latent space</h3>
               <p>
-                MNIST images are encoded by a convolutional VAE. The encoder mean is whitened and all transport/drift operations
-                are performed in 6D latent space; decoding is used only for visual inspection.
+                MNIST images are encoded by a convolutional VAE. We whiten the encoder means and perform all transport operations in a 6D latent space, decoding only for visualization.
               </p>
             </article>
             <article class="card step-card">
               <span class="step-number">02</span>
               <h3>Generate candidate latents</h3>
               <p>
-                A one-step generator maps Gaussian noise to latent samples. The drift module then updates those samples toward the
-                empirical data distribution.
+                A one-step generator maps Gaussian noise to latent samples. The drift update then moves these generated latents toward the empirical data latent distribution.
               </p>
             </article>
             <article class="card step-card">
               <span class="step-number">03</span>
-              <h3>Fit an ICNN potential</h3>
+              <h3>Fit a convex potential</h3>
               <p>
-                The learned map is <span class="math">T<sub>ω</sub>(z)=∇ψ<sub>ω</sub>(z)</span>. Convexity is preserved with
-                non-negative cascade weights and positive semidefinite quadratic injections.
+                The learned map is <span class="math">T<sub>ω</sub>(z)=∇ψ<sub>ω</sub>(z)</span>. Non-negative cascade weights and positive semidefinite quadratic terms preserve convexity in the input.
               </p>
             </article>
             <article class="card step-card">
               <span class="step-number">04</span>
-              <h3>Compare against OT and kernel drift</h3>
+              <h3>Evaluate quality and cost</h3>
               <p>
-                We compare kernel drift, direct Sinkhorn barycentric drift, and NPF/ICNN regression-to-target drift using sliced-W2,
-                moment gaps, and decoded sample grids.
+                We compare Kernel, OT-direct, and CCNPF using transport metrics, semantic metrics, feature FID, latent moment gaps, training traces, and per-iteration runtime.
               </p>
             </article>
           </div>
+          <article class="card method-figure-card">
+            <img src="./static/images/method-diagram.svg" alt="Diagram of the Drifting-ICNN pipeline from noise to generated latent samples, drift, ICNN potential, and decoded samples." />
+          </article>
         </div>
       </section>
 
-      <section class="section" id="results">
+      <section class="section" id="experiments">
         <div class="shell">
           <div class="section-heading split">
             <div>
-              <p class="section-kicker">Preliminary results</p>
-              <h2>6D MNIST latent comparison</h2>
+              <p class="section-kicker">Experiments</p>
+              <h2>MNIST equal-iteration comparison</h2>
             </div>
             <p>
-              Lower is better for SW2², mean-gap, std-gap, and ∥V<sub>eval</sub>∥². The table is loaded from
-              <code>static/data/results.json</code>, so it is easy to update after final experiments.
+              We evaluate Kernel, OT-direct, and CCNPF at matched outer iterations in the same 6D MNIST latent space. Lower is better for Sliced W2, Class W2, feature FID, and latent std gap; higher is better for accuracy metrics and normalized score.
             </p>
           </div>
 
           <div class="results-layout">
-            <article class="card figure-card">
-              <div class="figure-header">
-                <h3>Decoded samples across methods</h3>
-                <p>Replace this placeholder with your final MNIST grid or copy a real image to the same path.</p>
-              </div>
-              <img src="./static/images/mnist-samples-placeholder.svg" alt="Placeholder grid comparing kernel, OT-direct, and NPF decoded MNIST samples." />
-            </article>
-
             <article class="card chart-card">
               <div class="figure-header">
-                <h3>SW2² comparison</h3>
-                <p>Kernel remains the best baseline in the current 6D regime.</p>
+                <h3>Normalized quality score</h3>
+                <p>Mean normalized score across the reported metrics. CCNPF is the strongest overall quality method in this equal-iteration comparison.</p>
               </div>
-              <div id="sw2-chart" class="chart" role="img" aria-label="Bar chart of final SW2 squared values for each method."></div>
+              <div id="quality-chart" class="chart" role="img" aria-label="Bar chart of mean normalized quality score for Kernel, OT-direct, and CCNPF."></div>
+            </article>
+            <article class="card figure-card compact">
+              <div class="figure-header">
+                <h3>Quality scorecard</h3>
+                <p>Summary view of the mean normalized quality score.</p>
+              </div>
+              <img class="figure-image" src="./static/images/mnist_quality_scorecard.png" alt="Normalized quality scorecard: Kernel 0.28, OT-direct 0.52, CCNPF 0.88." />
             </article>
           </div>
 
-          <div class="table-wrap card">
+          <div class="table-wrap card metrics-table-card">
             <table id="metrics-table">
-              <caption>Final evaluation after 3000 outer steps in 6D MNIST latent space.</caption>
+              <caption>MNIST equal-iteration quality and runtime metrics. The values are loaded from <code>static/data/results.json</code>.</caption>
               <thead>
                 <tr>
                   <th>Method</th>
-                  <th>SW2² ↓</th>
-                  <th>Mean gap ↓</th>
-                  <th>Std gap ↓</th>
-                  <th>∥V<sub>eval</sub>∥² ↓</th>
+                  <th>Sliced W2 ↓</th>
+                  <th>Class W2 ↓</th>
+                  <th>Feature FID ↓</th>
+                  <th>Class acc. ↑</th>
+                  <th>Min class acc. ↑</th>
+                  <th>Latent std gap ↓</th>
+                  <th>sec / iter ↓</th>
                   <th>Takeaway</th>
                 </tr>
               </thead>
@@ -209,47 +261,39 @@
             </table>
           </div>
 
-          <div class="callout honest">
-            <strong>Honest status.</strong>
-            NPF/ICNN is stable and reaches OT-direct-like quality on the diagnostic drift norm, but it does not yet beat the kernel
-            baseline on SW2². This is useful: the fixes make the remaining NPF-vs-Sinkhorn gap informative rather than a collapse artifact.
-          </div>
-        </div>
-      </section>
-
-      <!-- Interactive digit generation widget -->
-      <section id="interactive" class="section">
-        <div class="shell">
-          <div class="section-heading">
-            <p class="section-kicker">Interactive demo</p>
-            <h2>Try It: Class-Conditional Generation</h2>
-            <p>
-              Select a digit and click <strong>Generate</strong>. The widget currently
-              serves samples from our pre-generated bank of 100 images per class, and
-              it is wired so a checkpoint-backed generation endpoint can be plugged in
-              later without changing the interface.
-            </p>
-          </div>
-
-          <div class="widget-card">
-            <!-- Digit selector -->
-            <div class="digit-selector" role="group" aria-label="Select digit to generate">
-              <!-- JS fills these in -->
-            </div>
-
-            <!-- Generate button -->
-            <button class="btn-generate" id="btn-generate" aria-label="Generate a sample">
-              Generate
-            </button>
-
-            <!-- Output -->
-            <div class="widget-output" id="widget-output" aria-live="polite">
-              <div class="output-placeholder">
-                <span>Select a digit and click Generate</span>
+          <div class="figure-grid">
+            <article class="card figure-card wide">
+              <div class="figure-header">
+                <h3>Detailed quality metrics</h3>
+                <p>
+                  CCNPF wins Sliced W2, feature FID, and latent standard-deviation gap. OT-direct is strongest on class accuracy and class transport.
+                </p>
               </div>
-            </div>
+              <img class="figure-image" src="./static/images/mnist_quality_metrics.png" alt="Six-panel bar chart showing Sliced W2, Class W2, Feature FID, Class accuracy, minimum class accuracy, and latent std gap." />
+            </article>
+            <article class="card figure-card wide">
+              <div class="figure-header">
+                <h3>Training traces and inverse residual</h3>
+                <p>
+                  CCNPF keeps the inverse residual below the guardrail and shows stable training traces, supporting the claim that the learned potential remains numerically controlled.
+                </p>
+              </div>
+              <img class="figure-image" src="./static/images/mnist_training_traces.png" alt="Training traces for generator loss, drift norm, and CCNPF inverse residual." />
+            </article>
+            <article class="card figure-card wide">
+              <div class="figure-header">
+                <h3>Runtime and quality tradeoffs</h3>
+                <p>
+                  The main cost of CCNPF is runtime: it improves quality but requires a much more expensive iteration than Kernel or OT-direct.
+                </p>
+              </div>
+              <img class="figure-image" src="./static/images/mnist_runtime_quality_tradeoff.png" alt="Runtime per iteration, FID-runtime tradeoff, and semantic fidelity versus class transport." />
+            </article>
+          </div>
 
-            <p class="widget-caption" id="widget-caption"></p>
+          <div class="callout honest">
+            <strong>Interpretation.</strong>
+            The final MNIST result is stronger than the midterm picture: the ICNN-based drift now beats both baselines on the aggregate quality score and several individual quality metrics. The price is computational cost, so the method should be interpreted as a quality-improving but optimization-heavy alternative to kernel drift.
           </div>
         </div>
       </section>
@@ -258,16 +302,15 @@
         <div class="shell">
           <div class="section-heading">
             <p class="section-kicker">Diagnostics</p>
-            <h2>Five silent failure modes we fixed</h2>
+            <h2>Failure modes that shaped the final evaluation</h2>
             <p>
-              The initial implementation looked good under the old diagnostic but produced collapsed samples. These fixes make the
-              evaluation collapse-aware and the ICNN drift numerically meaningful.
+              Earlier versions looked good under the old diagnostic but produced collapsed samples. These fixes make the evaluation collapse-aware and the ICNN drift numerically meaningful.
             </p>
           </div>
           <div class="fix-grid">
             <article class="card fix-card">
               <h3>Selection metric collapse</h3>
-              <p>Replaced ∥V<sub>eval</sub>∥² selection with sliced-W2, which penalizes collapse onto the data mean.</p>
+              <p>Replaced drift-norm selection with Sliced W2, which penalizes collapse onto the data mean.</p>
             </article>
             <article class="card fix-card">
               <h3>Diagonal-only moments</h3>
@@ -279,7 +322,7 @@
             </article>
             <article class="card fix-card">
               <h3>Smoothed inner target</h3>
-              <p>Kept regression as the stable default and implemented a semi-dual + cycle-consistency alternative as opt-in.</p>
+              <p>Compared regression-to-target with a semi-dual plus cycle-consistency variant to reduce target smoothing artifacts.</p>
             </article>
             <article class="card fix-card">
               <h3>Identity-init tightening</h3>
@@ -289,70 +332,50 @@
         </div>
       </section>
 
-      <section class="section" id="ablations">
+      <section class="section" id="limitations">
         <div class="shell two-column align-start">
           <div>
-            <p class="section-kicker">Ablations</p>
-            <h2>Capacity and optimization sensitivity</h2>
-            <p class="prose">
-              Use this area for width/depth sweeps, inner-step ablations, or learning-rate sensitivity. The included image is a
-              placeholder so the page is complete even before final plots are copied in.
+            <p class="section-kicker">Conclusion and limitations</p>
+            <h2>What we learned</h2>
+          </div>
+          <div class="prose">
+            <p>
+              The main takeaway is that a convex-potential drift can be made stable inside a drifting generative model and can outperform the kernel and OT-direct baselines on several MNIST latent-space quality metrics. This supports the hypothesis that adding Brenier-map structure to the drift is useful.
+            </p>
+            <p>
+              The main limitation is efficiency. CCNPF is more than an order of magnitude slower per iteration than the kernel baseline, so its quality advantage must be weighed against compute. The current evidence is also limited to MNIST in a low-dimensional VAE latent space. Future work should test higher-dimensional latents, add stronger spectral or gradient penalties for the semi-dual potential, and report image-level metrics on more complex datasets such as CIFAR-10 or CelebA.
             </p>
           </div>
-          <article class="card figure-card">
-            <img src="./static/images/ablation-placeholder.svg" alt="Placeholder ablation heatmap." />
-          </article>
         </div>
       </section>
 
-      <section class="section tinted" id="next">
-        <div class="shell">
-          <div class="section-heading">
-            <p class="section-kicker">Next steps</p>
-            <h2>What remains for the final submission</h2>
-          </div>
-          <div class="next-grid">
-            <article class="card next-card">
-              <h3>Unblock the inner loop</h3>
-              <p>Run fixed-compute ablations over inner steps, inner learning rate, and outer steps; test warm-starting ψ across batches.</p>
-            </article>
-            <article class="card next-card">
-              <h3>Stabilize the semi-dual</h3>
-              <p>Add spectral normalization or an R1-style gradient penalty before investing heavily in the Makkuva semi-dual variant.</p>
-            </article>
-            <article class="card next-card">
-              <h3>Scale beyond MNIST</h3>
-              <p>Move to higher-dimensional pretrained VAE latents and report FID, wall-clock cost, and qualitative grids at matched compute.</p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="section" id="team">
+      <section class="section tinted" id="team">
         <div class="shell">
           <div class="section-heading split">
             <div>
-              <p class="section-kicker">Team</p>
-              <h2>Contributors</h2>
+              <p class="section-kicker">Individual contributions</p>
+              <h2>Team roles</h2>
             </div>
-            <p>Edit the contribution bullets once your final division of work is fixed.</p>
+            <p>
+              The project combined model implementation, diagnostic debugging, evaluation, visualization, and final webpage preparation.
+            </p>
           </div>
           <div class="team-grid">
             <article class="card person-card">
               <h3>Quentin Chappuis</h3>
-              <p>Website, diagnostics narrative, evaluation presentation. <span class="todo">Edit contribution.</span></p>
+              <p>Final webpage, result visualization, evaluation narrative, and integration of the project figures into the submission page.</p>
             </article>
             <article class="card person-card">
               <h3>Johan I. A. Bordet</h3>
-              <p>Model implementation and experiments. <span class="todo">Edit contribution.</span></p>
+              <p>ICNN/NPF implementation support, model debugging, and analysis of optimization stability.</p>
             </article>
             <article class="card person-card">
               <h3>Satyam Chauhan</h3>
-              <p>Baselines, metrics, and result analysis. <span class="todo">Edit contribution.</span></p>
+              <p>Baseline comparisons, metric computation, diagnostic experiments, and quantitative result analysis.</p>
             </article>
             <article class="card person-card">
               <h3>Alireza Abdollahpoorrostam</h3>
-              <p>Repository owner, model experiments, and report integration. <span class="todo">Edit contribution.</span></p>
+              <p>Repository coordination, experiment pipeline, generator training setup, and report integration.</p>
             </article>
           </div>
         </div>
