@@ -302,38 +302,49 @@
 
       <section id="interactive" class="section tinted">
         <div class="shell two-column align-start generation-layout">
-          <div>
+          <div class="generation-copy">
             <p class="section-kicker">Interactive generation</p>
             <h2>Class-conditional MNIST samples</h2>
             <div class="prose">
               <p>
-                This section preserves the class-conditional generation demo added by the team. Select a digit and click
-                <strong>Generate</strong>: the widget serves samples from the pre-generated
-                <code>static/data/NPF_MNIST_sample_bank.json</code> bank, with a graceful fallback if a live generation endpoint is added later.
+                This demo shows samples exported from our class-conditional CCNPF/ICNN MNIST generator. Choose a target digit from 0 to 9, then press <strong>Generate</strong> to draw one saved sample for that class.
               </p>
               <p>
-                The demo is intentionally lightweight for GitHub Pages: it does not run the model in the browser. Instead, it displays generated CCNPF/ICNN samples that were exported ahead of time, making the final webpage reproducible and fast to load.
+                The goal is to make the qualitative result easy to inspect directly on the project page. Each click displays another generated digit from the saved sample bank used for the final webpage, so the demo stays reproducible and fast on GitHub Pages.
               </p>
             </div>
           </div>
 
-          <div class="widget-card card">
-            <div class="widget-instructions">
-              <strong>Choose a digit</strong>
-              <span>The buttons are available even while the sample bank loads.</span>
+          <div class="widget-card card generation-widget">
+            <div class="widget-topline">
+              <div>
+                <p class="widget-kicker">MNIST sampler</p>
+                <h3>Pick a target digit</h3>
+              </div>
+              <span class="sample-pill">CCNPF / ICNN</span>
             </div>
-            <div class="digit-selector" role="group" aria-label="Select digit to generate">
-              <!-- Filled by static/js/main.js -->
-            </div>
-            <button class="btn-generate" id="btn-generate" aria-label="Generate a sample" disabled>
-              Generate
-            </button>
-            <div class="widget-output" id="widget-output" aria-live="polite">
-              <div class="output-placeholder">
-                <span>Select a digit and click Generate</span>
+
+            <div class="digit-selector-panel">
+              <div class="digit-selector" role="group" aria-label="Select digit to generate">
+                <!-- Filled by static/js/main.js -->
               </div>
             </div>
-            <p class="widget-caption" id="widget-caption"></p>
+
+            <div class="widget-action-row">
+              <button class="btn-generate" id="btn-generate" aria-label="Generate a sample" disabled>
+                Generate sample
+              </button>
+              <p>Each click samples a saved output for the selected class.</p>
+            </div>
+
+            <div class="widget-preview">
+              <div class="widget-output" id="widget-output" aria-live="polite">
+                <div class="output-placeholder">
+                  <span>Select a digit, then generate a sample.</span>
+                </div>
+              </div>
+              <p class="widget-caption" id="widget-caption"></p>
+            </div>
           </div>
         </div>
       </section>
