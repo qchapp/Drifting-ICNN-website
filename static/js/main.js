@@ -200,13 +200,16 @@ async function generateDigitSample(digit) {
   };
 }
 
-function initWidget(sampleBank) {
+function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) {
   const selector  = document.querySelector('.digit-selector');
   const btnGen    = document.getElementById('btn-generate');
   const output    = document.getElementById('widget-output');
   const caption   = document.getElementById('widget-caption');
 
   if (!selector || !btnGen || !output) return;
+
+  // Avoid duplicating buttons if the script is loaded twice during local previews.
+  selector.innerHTML = '';
 
   const placeholder = output.querySelector('.output-placeholder');
   let selectedDigit = null;
@@ -284,8 +287,19 @@ function initWidget(sampleBank) {
         }
       }
 
+      const sampleBank = sampleBankState.data || {};
       const pool = sampleBank[String(selectedDigit)] || sampleBank[selectedDigit];
       if (!pool || pool.length === 0) {
+        if (!sampleBankState.loaded && !sampleBankState.error) {
+          setOutputMessage('The sample bank is still loading. Please try again in a moment.');
+          setCaption('Waiting for static/data/NPF_MNIST_sample_bank.json');
+          return;
+        }
+        if (sampleBankState.error) {
+          setOutputMessage('Sample bank not found. Keep static/data/NPF_MNIST_sample_bank.json in the repo.');
+          setCaption('The controls are working, but the pre-generated samples are missing.');
+          return;
+        }
         throw new Error(`No samples available for digit ${selectedDigit}.`);
       }
 
@@ -312,10 +326,27 @@ function initWidget(sampleBank) {
   });
 }
 
+const sampleBankState = { data: {}, loaded: false, error: null };
+
+// Build the UI immediately. The previous version only created the digit
+// buttons after the JSON bank loaded, so a missing/slow sample-bank request
+// made the widget look broken and left only a disabled Generate button.
+initWidget(sampleBankState);
+
 loadSampleBank()
-  .then(initWidget)
+  .then((data) => {
+    sampleBankState.data = data || {};
+    sampleBankState.loaded = true;
+    sampleBankState.error = null;
+    const caption = document.getElementById('widget-caption');
+    if (caption) caption.textContent = 'Ready: select a digit, then generate a pre-computed CCNPF/ICNN sample.';
+  })
   .catch(err => {
     console.warn('Sample bank not available:', err);
+    sampleBankState.loaded = false;
+    sampleBankState.error = err;
     const placeholder = document.querySelector('.output-placeholder');
-    if (placeholder) placeholder.textContent = 'Sample bank not yet available.';
+    if (placeholder) placeholder.textContent = 'Select a digit. Samples need static/data/NPF_MNIST_sample_bank.json.';
+    const caption = document.getElementById('widget-caption');
+    if (caption) caption.textContent = 'Missing sample bank: restore the JSON file from the generation-widget commit.';
   });

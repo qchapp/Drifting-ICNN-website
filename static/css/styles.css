@@ -1093,3 +1093,58 @@ tbody tr.best td:first-child::after {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
+
+/* Generation widget fix: build a visible card even if the JSON bank is slow/missing. */
+.generation-layout {
+  align-items: center;
+}
+
+.widget-instructions {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: baseline;
+  color: var(--text);
+}
+
+.widget-instructions span {
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+.widget-card.card {
+  min-height: 420px;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  background: var(--bg-card-strong);
+}
+
+.digit-selector:empty::before {
+  content: "Loading digit buttons…";
+  grid-column: 1 / -1;
+  color: var(--muted);
+  text-align: center;
+  padding: 0.9rem;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.widget-card .digit-btn {
+  min-height: 42px;
+}
+
+.widget-card .btn-generate {
+  width: min(240px, 100%);
+}
+
+@media (max-width: 760px) {
+  .widget-instructions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .widget-instructions span {
+    text-align: left;
+  }
+}
