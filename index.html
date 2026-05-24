@@ -136,35 +136,67 @@
           <div class="section-heading split">
             <div>
               <p class="section-kicker">Related work</p>
-              <h2>Kernel drifts, optimal transport, and ICNN maps</h2>
+              <h2>Where our method fits in the literature</h2>
             </div>
             <p>
-              Our method sits between three families of ideas: drifting generative models, entropic optimal transport, and neural optimal transport maps parameterized by convex potentials.
+              The project connects one-step drifting generators with optimal-transport theory and neural convex potentials. We use bracketed citations below and provide a compact bibliography at the end of the section.
             </p>
           </div>
-          <div class="method-grid three">
-            <article class="card step-card">
-              <span class="step-number">A</span>
-              <h3>Drifting generative models</h3>
+
+          <div class="related-work-grid">
+            <article class="card step-card related-card">
+              <span class="step-number">01</span>
+              <h3>Drifting and Sinkhorn-drifting models</h3>
               <p>
-                The baseline method updates generated samples using a kernel drift. This gives a strong, fast reference point and remains important in our runtime-quality comparison.
+                Deng et al. introduced generative modeling via drifting, where a one-step generator is trained by moving samples with a cross-minus-self kernel drift <a href="#ref-deng">[1]</a>. He et al. later interpreted this drift as a Sinkhorn-divergence gradient-flow approximation and showed that full Sinkhorn normalization improves temperature robustness and identifiability <a href="#ref-he">[2]</a>. Our work keeps the drifting training loop but replaces the coupling-defined drift with a learned convex-potential map.
               </p>
             </article>
-            <article class="card step-card">
-              <span class="step-number">B</span>
-              <h3>Entropic OT baselines</h3>
+
+            <article class="card step-card related-card">
+              <span class="step-number">02</span>
+              <h3>Convex potentials and Brenier maps</h3>
               <p>
-                Direct OT uses a Sinkhorn plan and barycentric drift. It provides a principled transport target but is sensitive to entropic regularization and collapse-aware model selection.
+                Brenier's theorem states that, under quadratic cost and suitable regularity, the optimal transport map is the gradient of a convex function <a href="#ref-brenier">[4]</a>, a perspective also developed in Villani's optimal transport text <a href="#ref-villani">[5]</a>. Amos et al. introduced input-convex neural networks, whose architecture enforces convexity with respect to the input <a href="#ref-amos">[3]</a>. These results motivate modeling the drift as <span class="math">∇ψ<sub>ω</sub>(z)-z</span>.
               </p>
             </article>
-            <article class="card step-card">
-              <span class="step-number">C</span>
-              <h3>Input-convex neural maps</h3>
+
+            <article class="card step-card related-card">
+              <span class="step-number">03</span>
+              <h3>Neural optimal transport</h3>
               <p>
-                ICNN-based optimal transport learns convex potentials whose gradients define transport maps. Our contribution is to insert this idea into the drifting-generator loop and evaluate the tradeoff.
+                Makkuva et al. used ICNNs to learn optimal transport maps through a Kantorovich-dual formulation <a href="#ref-makkuva">[6]</a>. Korotin et al. extended neural OT to larger-scale saddle-point objectives <a href="#ref-korotin">[7]</a>, and Bunne et al. trained conditional Monge maps for perturbation prediction <a href="#ref-bunne">[8]</a>. We adapt this neural-OT idea to a different setting: the ICNN is not the final generator, but the inner-loop drift field used to train a one-step generator.
+              </p>
+            </article>
+
+            <article class="card step-card related-card">
+              <span class="step-number">04</span>
+              <h3>OT-guided flows and kernel losses</h3>
+              <p>
+                Minibatch OT has also been used to straighten flow-matching trajectories <a href="#ref-pooladian">[9]</a>, <a href="#ref-tong">[10]</a>, and ICNNs have been used to parameterize Wasserstein gradient flows and probability-space functionals <a href="#ref-fan">[11]</a>, <a href="#ref-alvarez">[12]</a>. Kernel and Sinkhorn generative losses, including GMMNs and Sinkhorn-divergence generative models, are earlier relatives of drifting-style distribution matching <a href="#ref-li">[13]</a>, <a href="#ref-salimans">[14]</a>, <a href="#ref-genevay">[15]</a>.
               </p>
             </article>
           </div>
+
+          <details class="card reference-card" open>
+            <summary>Selected references</summary>
+            <ol class="references">
+              <li id="ref-deng">M. Deng, H. Li, T. Li, Y. Du, and K. He. <em>Generative modeling via drifting</em>. arXiv preprint arXiv:2602.04770, 2026.</li>
+              <li id="ref-he">P. He, O. Khangaonkar, H. Pirsiavash, Y. Bai, and S. Kolouri. <em>Sinkhorn-drifting generative models</em>. arXiv preprint arXiv:2603.12366, 2026.</li>
+              <li id="ref-amos">B. Amos, L. Xu, and J. Z. Kolter. <em>Input convex neural networks</em>. ICML, 2017.</li>
+              <li id="ref-brenier">Y. Brenier. <em>Polar factorization and monotone rearrangement of vector-valued functions</em>. Communications on Pure and Applied Mathematics, 1991.</li>
+              <li id="ref-villani">C. Villani. <em>Optimal Transport: Old and New</em>. Springer, 2009.</li>
+              <li id="ref-makkuva">A. Makkuva, A. Taghvaei, S. Oh, and J. Lee. <em>Optimal transport mapping via input convex neural networks</em>. ICML, 2020.</li>
+              <li id="ref-korotin">A. Korotin, D. Selikhanovych, and E. Burnaev. <em>Neural optimal transport</em>. ICLR, 2023.</li>
+              <li id="ref-bunne">C. Bunne, A. Krause, and M. Cuturi. <em>Supervised training of conditional Monge maps</em>. NeurIPS, 2022.</li>
+              <li id="ref-pooladian">A.-A. Pooladian, H. Ben-Hamu, C. Domingo-Enrich, B. Amos, Y. Lipman, and R. T. Q. Chen. <em>Multisample flow matching: Straightening flows with minibatch couplings</em>. ICML, 2023.</li>
+              <li id="ref-tong">A. Tong, N. Malkin, G. Huguet, Y. Zhang, J. Rector-Brooks, K. Fatras, G. Wolf, and Y. Bengio. <em>Improving and generalizing flow-based generative models with minibatch optimal transport</em>. TMLR, 2024.</li>
+              <li id="ref-fan">J. Fan, Q. Zhang, A. Taghvaei, and Y. Chen. <em>Variational Wasserstein gradient flow</em>. ICML, 2022.</li>
+              <li id="ref-alvarez">D. Alvarez-Melis, Y. Schiff, and Y. Mroueh. <em>Optimizing functionals on the space of probabilities with input convex neural networks</em>. TMLR, 2022.</li>
+              <li id="ref-li">Y. Li, K. Swersky, and R. Zemel. <em>Generative moment matching networks</em>. ICML, 2015.</li>
+              <li id="ref-salimans">T. Salimans, H. Zhang, R. Radford, and D. Metaxas. <em>Improving GANs using optimal transport</em>. ICLR, 2018.</li>
+              <li id="ref-genevay">A. Genevay, G. Peyré, and M. Cuturi. <em>Learning generative models with Sinkhorn divergences</em>. AISTATS, 2018.</li>
+            </ol>
+          </details>
         </div>
       </section>
 

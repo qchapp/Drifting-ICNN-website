@@ -1561,3 +1561,66 @@ tbody tr.best td:first-child::after {
     height: min(210px, 72vw);
   }
 }
+
+/* ── Related work references ─────────────────────────────────────── */
+.related-work-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.related-card a,
+.references a {
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.reference-card {
+  margin-top: 1rem;
+  padding: 1.15rem 1.35rem;
+}
+
+.reference-card summary {
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 850;
+  letter-spacing: -0.01em;
+  list-style-position: inside;
+}
+
+.references {
+  margin: 1rem 0 0;
+  padding-left: 1.3rem;
+  color: var(--muted);
+  columns: 2;
+  column-gap: 2rem;
+  font-size: 0.94rem;
+}
+
+.references li {
+  break-inside: avoid;
+  margin: 0 0 0.75rem;
+}
+
+.references li:target {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  border-radius: 0.7rem;
+  padding: 0.35rem 0.45rem;
+}
+
+@media (max-width: 1080px) {
+  .related-work-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .related-work-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .references {
+    columns: 1;
+  }
+}
