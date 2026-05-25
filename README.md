@@ -47,3 +47,5 @@ The page includes the class-conditional MNIST generation widget from the teammat
 To enable live generation from the Hugging Face Space, set `data-generation-endpoint` on the `#interactive` section in `index.html` to the Space listing URL, for example `https://huggingface.co/spaces/JohanchoDeCuba/drifting-icnn-mnist/`. The page normalizes that link to the Space runtime origin, calls `GET /generate?label=<digit>&n_samples=1`, and renders the `npf` result by default. If the endpoint is missing or fails, the widget falls back to the saved sample bank so the demo still works offline.
 
 Live samples also show `inference_ms`, `clf_confidence`, `clf_prediction`, and `correct` directly under the generated image. Saved fallback samples keep the demo usable, but they do not include live metrics.
+
+The interactive widget now shows the live `kernel`, `ot_direct`, and `npf` results side-by-side after each generation click.

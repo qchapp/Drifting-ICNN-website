@@ -1294,17 +1294,22 @@ tbody tr.best td:first-child::after {
 }
 
 .generation-widget .widget-output {
-  width: min(230px, 56vw);
-  height: min(230px, 56vw);
+  width: 100%;
+  min-height: 0;
   border-radius: 26px;
   border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--line));
   background: #050505;
   box-shadow: 0 20px 44px rgba(15, 23, 42, 0.18);
+  padding: 1rem;
 }
 
 .generation-widget .output-placeholder {
   color: rgba(255, 255, 255, 0.72);
   max-width: 14rem;
+  min-height: 210px;
+  display: grid;
+  place-items: center;
+  text-align: center;
 }
 
 .generation-widget .widget-caption {
@@ -1313,42 +1318,87 @@ tbody tr.best td:first-child::after {
   line-height: 1.45;
 }
 
-.generation-widget .widget-metrics {
+.comparison-grid {
   width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.comparison-card {
+  display: grid;
+  gap: 0.8rem;
+  padding: 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+  border-radius: 22px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-card) 92%, transparent), color-mix(in srgb, var(--figure-bg) 78%, transparent));
+}
+
+.comparison-card-head {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.comparison-card-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.comparison-badge {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  padding: 0.4rem 0.65rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-card));
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.comparison-card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  border-radius: 18px;
+  background: #050505;
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
+}
+
+.comparison-metrics {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.65rem;
 }
 
-.generation-widget .widget-metric {
+.comparison-card .widget-metric {
   padding: 0.72rem 0.8rem;
   border: 1px solid var(--line);
   border-radius: 16px;
   background: color-mix(in srgb, var(--bg-card) 84%, transparent);
 }
 
-.generation-widget .widget-metric span {
+.comparison-card .widget-metric span {
   display: block;
   color: var(--muted);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.generation-widget .widget-metric strong {
+.comparison-card .widget-metric strong {
   display: block;
   margin-top: 0.28rem;
   color: var(--text);
-  font-size: 0.98rem;
+  font-size: 0.96rem;
   font-weight: 850;
 }
 
-.generation-widget .widget-metrics[data-state="fallback"] {
-  display: block;
-}
-
-.generation-widget .widget-metrics-note {
+.comparison-card .widget-metrics-note {
   margin: 0;
   padding: 0.75rem 0.9rem;
   border: 1px dashed var(--line);
@@ -1358,8 +1408,16 @@ tbody tr.best td:first-child::after {
   background: color-mix(in srgb, var(--bg-card) 70%, transparent);
 }
 
+.comparison-card--fallback {
+  max-width: 100%;
+}
+
 @media (max-width: 1080px) {
   .generation-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .comparison-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1393,18 +1451,21 @@ tbody tr.best td:first-child::after {
 
 /* ── Final centered generation widget override ───────────────────── */
 #interactive .generation-layout {
-  grid-template-columns: minmax(280px, 0.78fr) minmax(440px, 1.02fr);
+  grid-template-columns: 1fr;
   align-items: center;
   gap: clamp(2rem, 5vw, 5rem);
 }
 
 #interactive .generation-copy .prose {
-  max-width: 520px;
+  width: 100%;
+  max-width: 1120px;
+  margin-inline: auto;
 }
 
 #interactive .generation-widget.widget-card.card {
   width: 100%;
-  max-width: 660px;
+  max-width: 1120px;
+  grid-column: 1 / -1;
   margin-inline: auto;
   display: flex;
   flex-direction: column;
@@ -1446,11 +1507,13 @@ tbody tr.best td:first-child::after {
 }
 
 #interactive .widget-intro {
-  max-width: 25rem;
-  margin: 0.25rem auto 0;
+  width: 100%;
+  max-width: none;
+  margin: 0.25rem 0 0;
   color: var(--muted);
   font-size: 0.96rem;
   line-height: 1.45;
+  text-align: center;
 }
 
 #interactive .sample-pill,
@@ -1459,7 +1522,8 @@ tbody tr.best td:first-child::after {
 }
 
 #interactive .digit-selector-panel {
-  width: min(100%, 560px);
+  width: 100%;
+  max-width: 1120px;
   padding: 0;
   border: 0;
   border-radius: 0;
@@ -1468,17 +1532,17 @@ tbody tr.best td:first-child::after {
 
 #interactive .generation-widget .digit-selector {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
   align-items: center;
-  gap: 0.7rem;
+  gap: clamp(0.28rem, 0.7vw, 0.55rem);
   width: 100%;
 }
 
 #interactive .generation-widget .digit-btn {
   flex: 0 0 auto;
-  width: 48px;
-  height: 48px;
+  width: clamp(34px, 5vw, 46px);
+  height: clamp(34px, 5vw, 46px);
   max-width: none;
   aspect-ratio: auto;
   display: grid;
@@ -1533,7 +1597,8 @@ tbody tr.best td:first-child::after {
 }
 
 #interactive .widget-preview {
-  width: min(100%, 380px);
+  width: 100%;
+  max-width: 1120px;
   margin-inline: auto;
   display: flex;
   flex-direction: column;
@@ -1547,18 +1612,41 @@ tbody tr.best td:first-child::after {
 }
 
 #interactive .generation-widget .widget-output {
-  width: 220px;
-  height: 220px;
+  width: 100%;
+  height: auto;
   border-radius: 28px;
   border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
   background: #050505;
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+  padding: 1rem;
 }
 
 #interactive .generation-widget .widget-output img {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+#interactive .generation-widget .widget-output .comparison-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+  align-items: start;
+}
+
+#interactive .generation-widget .widget-output .comparison-card {
+  min-width: 0;
+}
+
+#interactive .generation-widget .widget-output .comparison-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+#interactive .generation-widget .widget-output .comparison-metrics {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 #interactive .generation-widget .output-placeholder {
@@ -1582,7 +1670,11 @@ tbody tr.best td:first-child::after {
   }
 
   #interactive .generation-copy .prose {
-    max-width: 760px;
+    max-width: 1120px;
+  }
+
+  #interactive .generation-widget .widget-output .comparison-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -1592,6 +1684,7 @@ tbody tr.best td:first-child::after {
   }
 
   #interactive .generation-widget .digit-selector {
+    flex-wrap: wrap;
     gap: 0.5rem;
   }
 

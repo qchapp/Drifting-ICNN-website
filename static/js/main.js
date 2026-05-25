@@ -168,6 +168,14 @@ const SAMPLE_BANK_URL = './static/data/NPF_MNIST_sample_bank.json';
 const interactiveSection = document.querySelector('#interactive');
 const DIGIT_GENERATION_ENDPOINT = interactiveSection?.dataset.generationEndpoint || window.DIGIT_GENERATION_ENDPOINT || '';
 const DIGIT_GENERATION_METHOD = interactiveSection?.dataset.generationMethod || window.DIGIT_GENERATION_METHOD || 'npf';
+const MODEL_ORDER = ['kernel', 'ot_direct', 'npf'];
+
+function formatMethodLabel(method) {
+  if (method === 'ot_direct') return 'OT-direct';
+  if (method === 'npf') return 'NPF';
+  if (method === 'kernel') return 'Kernel';
+  return method;
+}
 
 function normalizeGenerationEndpoint(endpoint) {
   const trimmedEndpoint = endpoint.trim();
@@ -228,25 +236,32 @@ async function generateDigitSample(digit) {
   }
 
   const payload = await response.json();
-  const methodPayload = payload?.[DIGIT_GENERATION_METHOD] || payload?.npf || payload?.kernel || payload?.ot_direct || null;
-  if (!methodPayload) {
-    throw new Error('Generation endpoint returned no method payload.');
-  }
+  const samples = MODEL_ORDER.map((method) => {
+    const methodPayload = payload?.[method] || null;
+    if (!methodPayload) return null;
 
-  const imageUrl = methodPayload.image || methodPayload.imageUrl || methodPayload.dataUrl || methodPayload.sample || null;
-  if (!imageUrl) {
-    throw new Error('Generation endpoint returned no image URL or data URI.');
+    const imageUrl = methodPayload.image || methodPayload.imageUrl || methodPayload.dataUrl || methodPayload.sample || null;
+    if (!imageUrl) return null;
+
+    return {
+      method,
+      imageUrl,
+      metrics: {
+        inferenceMs: methodPayload.inference_ms,
+        clfConfidence: methodPayload.clf_confidence,
+        clfPrediction: methodPayload.clf_prediction,
+        correct: methodPayload.correct,
+      },
+    };
+  }).filter(Boolean);
+
+  if (samples.length === 0) {
+    throw new Error('Generation endpoint returned no renderable method payloads.');
   }
 
   return {
-    imageUrl,
-    caption: `${DIGIT_GENERATION_METHOD.toUpperCase()} live sample for digit ${digit}`,
-    metrics: {
-      inferenceMs: methodPayload.inference_ms,
-      clfConfidence: methodPayload.clf_confidence,
-      clfPrediction: methodPayload.clf_prediction,
-      correct: methodPayload.correct,
-    },
+    samples,
+    caption: `Live comparison for digit ${digit}`,
   };
 }
 
@@ -254,7 +269,6 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
   const selector  = document.querySelector('.digit-selector');
   const btnGen    = document.getElementById('btn-generate');
   const output    = document.getElementById('widget-output');
-  const metrics   = document.getElementById('widget-metrics');
   const caption   = document.getElementById('widget-caption');
 
   if (!selector || !btnGen || !output) return;
@@ -274,26 +288,10 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
     messageNode.className = 'output-placeholder';
     messageNode.textContent = message;
     output.appendChild(messageNode);
+    output.dataset.state = 'placeholder';
   }
 
-  function clearMetrics() {
-    if (metrics) {
-      metrics.innerHTML = '';
-      metrics.dataset.state = '';
-    }
-  }
-
-  function renderMetrics(metricData, noteText) {
-    if (!metrics) return;
-
-    if (!metricData) {
-      metrics.dataset.state = 'fallback';
-      metrics.innerHTML = noteText
-        ? `<p class="widget-metrics-note">${noteText}</p>`
-        : '';
-      return;
-    }
-
+  function renderMetricEntries(metricData) {
     const confidence = typeof metricData.clfConfidence === 'number'
       ? `${(metricData.clfConfidence * 100).toFixed(1)}%`
       : 'n/a';
@@ -307,8 +305,7 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
       ? (metricData.correct ? 'yes' : 'no')
       : 'n/a';
 
-    metrics.dataset.state = 'live';
-    metrics.innerHTML = `
+    return `
       <div class="widget-metric"><span>Inference</span><strong>${inferenceMs}</strong></div>
       <div class="widget-metric"><span>Confidence</span><strong>${confidence}</strong></div>
       <div class="widget-metric"><span>Prediction</span><strong>${prediction}</strong></div>
@@ -322,13 +319,51 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
     }
   }
 
-  function renderImage(imageUrl, altText, captionText, metricData = null, metricNote = '') {
-    const img = document.createElement('img');
-    img.src = imageUrl;
-    img.alt = altText;
+  function renderComparison(samples, digit) {
     output.innerHTML = '';
-    output.appendChild(img);
-    renderMetrics(metricData, metricNote);
+    output.dataset.state = 'comparison';
+
+    const grid = document.createElement('div');
+    grid.className = 'comparison-grid';
+
+    samples.forEach(({ method, imageUrl, metrics: metricData }) => {
+      const card = document.createElement('article');
+      card.className = `comparison-card comparison-card--${method}`;
+      card.innerHTML = `
+        <div class="comparison-card-head">
+          <span class="comparison-badge">${formatMethodLabel(method)}</span>
+          <p>Live sample for digit ${digit}</p>
+        </div>
+        <img src="${imageUrl}" alt="${formatMethodLabel(method)} generated image of digit ${digit}" />
+        <div class="comparison-metrics">
+          ${renderMetricEntries(metricData)}
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    output.appendChild(grid);
+    setCaption('Live comparison across Kernel, OT-direct, and NPF.');
+  }
+
+  function renderFallbackSample(imageUrl, digit, captionText) {
+    output.innerHTML = '';
+    output.dataset.state = 'fallback';
+
+    const card = document.createElement('article');
+    card.className = 'comparison-card comparison-card--fallback';
+    card.innerHTML = `
+      <div class="comparison-card-head">
+        <span class="comparison-badge">Fallback sample</span>
+        <p>Saved digit ${digit} sample</p>
+      </div>
+      <img src="${imageUrl}" alt="Saved fallback sample of digit ${digit}" />
+      <div class="comparison-metrics">
+        <p class="widget-metrics-note">Live metrics are unavailable for saved samples.</p>
+      </div>
+    `;
+
+    output.appendChild(card);
     setCaption(captionText);
   }
 
@@ -358,8 +393,6 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
       : 'Select a digit and click Generate.';
   }
 
-  clearMetrics();
-
   updateButtonState();
 
   btnGen.addEventListener('click', async () => {
@@ -373,19 +406,13 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
         try {
           const liveSample = await generateDigitSample(selectedDigit);
           if (liveSample) {
-            renderImage(
-              liveSample.imageUrl,
-              `Generated image of digit ${selectedDigit}`,
-              liveSample.caption,
-              liveSample.metrics,
-            );
+            renderComparison(liveSample.samples, selectedDigit);
             return;
           }
         } catch (error) {
           console.warn('Live generation failed, falling back to the pre-generated bank.', error);
           setOutputMessage(`Live generation failed (${error.message}). Showing a saved fallback sample.`);
           setCaption('The Space responded with an error, so the widget is using the saved bank instead.');
-          renderMetrics(null, 'Live metrics are unavailable for saved samples.');
         }
       }
 
@@ -412,18 +439,15 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
       } while (pool.length > 1 && idx === lastShown[selectedDigit]);
       lastShown[selectedDigit] = idx;
 
-      renderImage(
+      renderFallbackSample(
         pool[idx],
-        `Pre-generated sample of digit ${selectedDigit}`,
-        `Saved sample ${idx + 1} / ${pool.length} — digit "${selectedDigit}" — NPF / ICNN conditional generator`,
-        null,
-        'Live metrics are unavailable for saved samples.'
+        selectedDigit,
+        `Saved sample ${idx + 1} / ${pool.length} — digit "${selectedDigit}" — NPF / ICNN conditional generator`
       );
     } catch (error) {
       console.error(error);
       setOutputMessage('Could not generate a sample. Check the live endpoint or the fallback data path.');
       setCaption('');
-      clearMetrics();
     } finally {
       isGenerating = false;
       updateButtonState();
