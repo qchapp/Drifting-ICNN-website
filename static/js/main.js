@@ -165,7 +165,48 @@ loadResults()
 // ── Interactive digit widget ──────────────────────────────────────────────
 
 const SAMPLE_BANK_URL = './static/data/NPF_MNIST_sample_bank.json';
-const DIGIT_GENERATION_ENDPOINT = document.querySelector('#interactive')?.dataset.generationEndpoint || window.DIGIT_GENERATION_ENDPOINT || '';
+const interactiveSection = document.querySelector('#interactive');
+const DIGIT_GENERATION_ENDPOINT = interactiveSection?.dataset.generationEndpoint || window.DIGIT_GENERATION_ENDPOINT || '';
+const DIGIT_GENERATION_METHOD = interactiveSection?.dataset.generationMethod || window.DIGIT_GENERATION_METHOD || 'npf';
+
+function normalizeGenerationEndpoint(endpoint) {
+  const trimmedEndpoint = endpoint.trim();
+  if (!trimmedEndpoint) return '';
+
+  try {
+    const parsedUrl = new URL(trimmedEndpoint, window.location.href);
+
+    if (parsedUrl.hostname === 'huggingface.co' && parsedUrl.pathname.startsWith('/spaces/')) {
+      const parts = parsedUrl.pathname.split('/').filter(Boolean);
+      const owner = parts[1];
+      const spaceName = parts[2];
+      if (owner && spaceName) {
+        return `https://${owner.toLowerCase()}-${spaceName.toLowerCase()}.hf.space`;
+      }
+    }
+
+    return parsedUrl.origin;
+  } catch {
+    return trimmedEndpoint.replace(/\/$/, '');
+  }
+}
+
+function getLiveGenerationUrl(digit) {
+  if (!DIGIT_GENERATION_ENDPOINT) return null;
+
+  const normalizedEndpoint = normalizeGenerationEndpoint(DIGIT_GENERATION_ENDPOINT);
+  if (!normalizedEndpoint) return null;
+
+  const baseUrl = normalizedEndpoint.endsWith('/generate')
+    ? normalizedEndpoint
+    : `${normalizedEndpoint.replace(/\/$/, '')}/generate`;
+
+  const url = new URL(baseUrl, window.location.href);
+  url.searchParams.set('label', String(Number(digit)));
+  url.searchParams.set('n_samples', '1');
+  url.searchParams.set('t', String(Date.now()));
+  return url;
+}
 
 async function loadSampleBank() {
   const response = await fetch(`${SAMPLE_BANK_URL}?v=2`, { cache: 'no-store' });
@@ -174,14 +215,12 @@ async function loadSampleBank() {
 }
 
 async function generateDigitSample(digit) {
-  if (!DIGIT_GENERATION_ENDPOINT) return null;
+  const requestUrl = getLiveGenerationUrl(digit);
+  if (!requestUrl) return null;
 
-  const response = await fetch(DIGIT_GENERATION_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ digit: Number(digit) }),
+  const response = await fetch(requestUrl, {
+    method: 'GET',
+    cache: 'no-store',
   });
 
   if (!response.ok) {
@@ -189,14 +228,19 @@ async function generateDigitSample(digit) {
   }
 
   const payload = await response.json();
-  const imageUrl = payload.imageUrl || payload.image || payload.dataUrl || payload.sample || null;
+  const methodPayload = payload?.[DIGIT_GENERATION_METHOD] || payload?.npf || payload?.kernel || payload?.ot_direct || null;
+  if (!methodPayload) {
+    throw new Error('Generation endpoint returned no method payload.');
+  }
+
+  const imageUrl = methodPayload.image || methodPayload.imageUrl || methodPayload.dataUrl || methodPayload.sample || null;
   if (!imageUrl) {
     throw new Error('Generation endpoint returned no image URL or data URI.');
   }
 
   return {
     imageUrl,
-    caption: payload.caption || `Generated digit ${digit}`,
+    caption: `${DIGIT_GENERATION_METHOD.toUpperCase()} live sample for digit ${digit}`,
   };
 }
 
@@ -242,7 +286,7 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
 
   function updateButtonState() {
     btnGen.disabled = selectedDigit === null || isGenerating;
-    btnGen.textContent = isGenerating ? 'Generating...' : 'Generate';
+    btnGen.textContent = isGenerating ? 'Generating...' : 'Generate sample';
   }
 
   // Build digit buttons 0-9
@@ -262,7 +306,7 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
 
   if (placeholder) {
     placeholder.textContent = DIGIT_GENERATION_ENDPOINT
-      ? 'Select a digit and generate a live sample.'
+      ? `Select a digit and generate a live ${DIGIT_GENERATION_METHOD.toUpperCase()} sample.`
       : 'Select a digit and click Generate.';
   }
 
@@ -284,6 +328,8 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
           }
         } catch (error) {
           console.warn('Live generation failed, falling back to the pre-generated bank.', error);
+          setOutputMessage(`Live generation failed (${error.message}). Showing a saved fallback sample.`);
+          setCaption('The Space responded with an error, so the widget is using the saved bank instead.');
         }
       }
 
@@ -313,11 +359,11 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
       renderImage(
         pool[idx],
         `Pre-generated sample of digit ${selectedDigit}`,
-        `Sample ${idx + 1} / ${pool.length} — digit "${selectedDigit}" — NPF / ICNN conditional generator`
+        `Saved sample ${idx + 1} / ${pool.length} — digit "${selectedDigit}" — NPF / ICNN conditional generator`
       );
     } catch (error) {
       console.error(error);
-      setOutputMessage('Could not generate a sample. Check the data path or generation endpoint.');
+      setOutputMessage('Could not generate a sample. Check the live endpoint or the fallback data path.');
       setCaption('');
     } finally {
       isGenerating = false;
