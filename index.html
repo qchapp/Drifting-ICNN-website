@@ -113,6 +113,29 @@
         </div>
       </section>
 
+      <section class="section" id="abstract">
+        <div class="shell two-column">
+          <div>
+            <p class="section-kicker">Abstract</p>
+            <h2>Brenier-displacement drifting for one-step generation</h2>
+          </div>
+          <div class="prose large">
+            <p>
+              Drifting generative models train a one-step generator by moving its push-forward distribution
+              <span class="math">\(q_{\theta} = {f_{\theta}}_{\#}p_{\varepsilon}\)</span> along a velocity field during training <a href="#ref-deng">[1]</a>. Inference remains simple:
+              a single forward pass <span class="math">\(x = f_{\theta}(\varepsilon)\)</span> produces a sample. The original kernel drift pulls generated samples toward data and pushes them away from other generated samples, but it is sensitive to the kernel temperature and is only defined on the current particle batch.
+            </p>
+            <p>
+              We replace this particle-local drift with a Brenier-style displacement field. The drift is written as
+              <span class="math">\(V_{\omega}(z)=\nabla\psi_{\omega}(z)-z\)</span>, where <span class="math">\(\psi_{\omega}\)</span> is an input-convex neural network. This choice is motivated by optimal transport theory: under quadratic cost, the optimal transport map has the form of the gradient of a convex potential <a href="#ref-brenier">[4]</a>, <a href="#ref-villani">[5]</a>, and ICNNs provide a practical way to parameterize such convex functions <a href="#ref-amos">[3]</a>.
+            </p>
+            <p>
+              On MNIST, using a frozen VAE encoder, class-balanced batches, 5000 outer iterations, and the same generator MLP across methods, our cycle-consistent neural potential field variant (CCNPF) obtains the best global distributional quality: Sliced W2 of <strong>0.01008</strong>, feature FID of <strong>87.95</strong>, and mean normalized quality score of <strong>0.88</strong>. The cost is runtime: <strong>1.379 seconds</strong> per iteration, compared with <strong>0.040 seconds</strong> for the kernel baseline.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section class="section tinted" id="introduction">
         <div class="shell two-column align-start">
           <div>
@@ -142,44 +165,6 @@
               Our method replaces both of these batch-local rules with a learned global map. We parameterize a convex potential <span class="math">\(\psi_{\omega}\)</span> with an input-convex neural network and define
               <span class="math">\(T_{\omega}(z)=\nabla\psi_{\omega}(z)\)</span> and
               <span class="math">\(V_{\omega}(z)=T_{\omega}(z)-z\)</span>. By Brenier's theorem, gradients of convex potentials are the natural form of quadratic-cost optimal transport maps <a href="#ref-brenier">[4]</a>, <a href="#ref-villani">[5]</a>. ICNNs provide a neural parameterization that enforces convexity with respect to the input by construction <a href="#ref-amos">[3]</a>. The resulting ICNN/CCNPF drift is therefore a structured, reusable displacement field rather than a kernel average or a one-batch Sinkhorn assignment.
-            </p>
-
-            <p>
-              In short, kernel drifting is the fastest but most heuristic option; direct OT is more geometrically grounded but remains per-batch; ICNN drifting tries to amortize the OT structure into a continuous convex-potential field. The main empirical tradeoff we observe is exactly this one: CCNPF improves global distributional quality on MNIST, but the inner optimization needed to learn the potential makes it significantly slower per iteration.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section class="section tinted" id="introduction">
-        <div class="shell two-column align-start">
-          <div>
-            <p class="section-kicker">Introduction</p>
-            <h2>Three ways to define the motion</h2>
-          </div>
-          <div class="prose">
-            <p>
-              The starting point of the project is the drifting framework: instead of sampling through many denoising or flow steps at inference time, we train a one-step generator whose samples are repeatedly displaced during training. Each generated latent <span class="math">\(x=f_{\theta}(\varepsilon)\)</span> is pushed toward a target point <span class="math">\(x + V_{p_{\mathrm{data}},q_{\theta}}(x)\)</span>, and the generator is regressed onto that stopped-gradient target.
-            </p>
-
-            <div class="equation-card">
-              <p class="equation-title">Drifting update</p>
-              <p><span class="math">\(\text{target: } x \mapsto x + V_{p_{\mathrm{data}},q_{\theta}}(x)\)</span></p>
-              <p><span class="math">\(L_{\mathrm{drift}}(\theta)=\mathbb{E}_{\varepsilon}\lVert x-\operatorname{stopgrad}(x+V(x))\rVert^2\)</span></p>
-            </div>
-
-            <p>
-              The key question is how to choose the drift field <span class="math">\(V\)</span>. The <strong>kernel baseline</strong> defines it with an attraction-repulsion rule: generated samples are pulled toward nearby data samples and pushed away from other generated samples. This is fast and simple, but it depends strongly on the kernel temperature <span class="math">\(\tau\)</span>, and the drift is recomputed from scratch for every batch. It is therefore a local particle rule, not a reusable transport map.
-            </p>
-
-            <p>
-              A more principled alternative is <strong>direct optimal transport</strong>. Here we compute a Sinkhorn coupling between generated latents and data latents, then move each generated point toward its OT barycentric target. This gives a drift that better respects the geometry of the two empirical distributions and reduces some of the kernel sensitivity. However, it is still batch-defined: the coupling only tells us where the current particles should move, and it must be recomputed at every iteration.
-            </p>
-
-            <p>
-              Our method replaces both of these batch-local rules with a learned global map. We parameterize a convex potential <span class="math">\(\psi_{\omega}\)</span> with an input-convex neural network and define
-              <span class="math">\(T_{\omega}(z)=\nabla\psi_{\omega}(z)\)</span> and
-              <span class="math">\(V_{\omega}(z)=T_{\omega}(z)-z\)</span>. By the Brenier viewpoint, gradients of convex potentials are the natural form of quadratic-cost optimal transport maps. The resulting ICNN/CCNPF drift is therefore a structured, reusable displacement field rather than a kernel average or a one-batch Sinkhorn assignment.
             </p>
 
             <p>
