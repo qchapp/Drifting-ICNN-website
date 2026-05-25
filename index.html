@@ -122,12 +122,12 @@
           <div class="prose large">
             <p>
               Drifting generative models train a one-step generator by moving its push-forward distribution
-              <span class="math">\(q_{\theta} = {f_{\theta}}_{\#}p_{\varepsilon}\)</span> along a velocity field during training <a href="#ref-deng">[1]</a>. Inference remains simple:
+              <span class="math">\(q_{\theta} = {f_{\theta}}_{\#}p_{\varepsilon}\)</span> along a velocity field during training <sup><a class="citation" href="#ref-deng">[1]</a></sup>. Inference remains simple:
               a single forward pass <span class="math">\(x = f_{\theta}(\varepsilon)\)</span> produces a sample. The original kernel drift pulls generated samples toward data and pushes them away from other generated samples, but it is sensitive to the kernel temperature and is only defined on the current particle batch.
             </p>
             <p>
               We replace this particle-local drift with a Brenier-style displacement field. The drift is written as
-              <span class="math">\(V_{\omega}(z)=\nabla\psi_{\omega}(z)-z\)</span>, where <span class="math">\(\psi_{\omega}\)</span> is an input-convex neural network. This choice is motivated by optimal transport theory: under quadratic cost, the optimal transport map has the form of the gradient of a convex potential <a href="#ref-brenier">[4]</a>, <a href="#ref-villani">[5]</a>, and ICNNs provide a practical way to parameterize such convex functions <a href="#ref-amos">[3]</a>.
+              <span class="math">\(V_{\omega}(z)=\nabla\psi_{\omega}(z)-z\)</span>, where <span class="math">\(\psi_{\omega}\)</span> is an input-convex neural network. This choice is motivated by optimal transport theory: under quadratic cost, the optimal transport map has the form of the gradient of a convex potential <sup><a class="citation" href="#ref-brenier">[4]</a></sup>, <sup><a class="citation" href="#ref-villani">[5]</a></sup>, and ICNNs provide a practical way to parameterize such convex functions <sup><a class="citation" href="#ref-amos">[3]</a></sup>.
             </p>
             <p>
               On MNIST, using a frozen VAE encoder, class-balanced batches, 5000 outer iterations, and the same generator MLP across methods, our cycle-consistent neural potential field variant (CCNPF) obtains the best global distributional quality: Sliced W2 of <strong>0.01008</strong>, feature FID of <strong>87.95</strong>, and mean normalized quality score of <strong>0.88</strong>. The cost is runtime: <strong>1.379 seconds</strong> per iteration, compared with <strong>0.040 seconds</strong> for the kernel baseline.
@@ -144,7 +144,7 @@
           </div>
           <div class="prose">
             <p>
-              The starting point of the project is the drifting framework: instead of sampling through many denoising or flow steps at inference time, we train a one-step generator whose samples are repeatedly displaced during training <a href="#ref-deng">[1]</a>. Each generated latent <span class="math">\(x=f_{\theta}(\varepsilon)\)</span> is pushed toward a target point <span class="math">\(x + V_{p_{\mathrm{data}},q_{\theta}}(x)\)</span>, and the generator is regressed onto that stopped-gradient target.
+              The starting point of the project is the drifting framework: instead of sampling through many denoising or flow steps at inference time, we train a one-step generator whose samples are repeatedly displaced during training <sup><a class="citation" href="#ref-deng">[1]</a></sup>. Each generated latent <span class="math">\(x=f_{\theta}(\varepsilon)\)</span> is pushed toward a target point <span class="math">\(x + V_{p_{\mathrm{data}},q_{\theta}}(x)\)</span>, and the generator is regressed onto that stopped-gradient target.
             </p>
 
             <div class="equation-card">
@@ -154,17 +154,17 @@
             </div>
 
             <p>
-              The key question is how to choose the drift field <span class="math">\(V\)</span>. The <strong>kernel baseline</strong> defines it with an attraction-repulsion rule: generated samples are pulled toward nearby data samples and pushed away from other generated samples. This is fast and simple, but it depends strongly on the kernel temperature <span class="math">\(\tau\)</span>, and the drift is recomputed from scratch for every batch. It is therefore a local particle rule, not a reusable transport map <a href="#ref-deng">[1]</a>.
+              The key question is how to choose the drift field <span class="math">\(V\)</span>. The <strong>kernel baseline</strong> defines it with an attraction-repulsion rule: generated samples are pulled toward nearby data samples and pushed away from other generated samples. This is fast and simple, but it depends strongly on the kernel temperature <span class="math">\(\tau\)</span>, and the drift is recomputed from scratch for every batch. It is therefore a local particle rule, not a reusable transport map <sup><a class="citation" href="#ref-deng">[1]</a></sup>.
             </p>
 
             <p>
-              A more principled alternative is <strong>direct optimal transport</strong>. Here we compute a Sinkhorn coupling between generated latents and data latents, then move each generated point toward its OT barycentric target. This gives a drift that better respects the geometry of the two empirical distributions and reduces some of the kernel sensitivity. However, it is still batch-defined: the coupling only tells us where the current particles should move, and it must be recomputed at every iteration <a href="#ref-he">[2]</a>.
+              A more principled alternative is <strong>direct optimal transport</strong>. Here we compute a Sinkhorn coupling between generated latents and data latents, then move each generated point toward its OT barycentric target. This gives a drift that better respects the geometry of the two empirical distributions and reduces some of the kernel sensitivity. However, it is still batch-defined: the coupling only tells us where the current particles should move, and it must be recomputed at every iteration <sup><a class="citation" href="#ref-he">[2]</a></sup>.
             </p>
 
             <p>
               Our method replaces both of these batch-local rules with a learned global map. We parameterize a convex potential <span class="math">\(\psi_{\omega}\)</span> with an input-convex neural network and define
               <span class="math">\(T_{\omega}(z)=\nabla\psi_{\omega}(z)\)</span> and
-              <span class="math">\(V_{\omega}(z)=T_{\omega}(z)-z\)</span>. By Brenier's theorem, gradients of convex potentials are the natural form of quadratic-cost optimal transport maps <a href="#ref-brenier">[4]</a>, <a href="#ref-villani">[5]</a>. ICNNs provide a neural parameterization that enforces convexity with respect to the input by construction <a href="#ref-amos">[3]</a>. The resulting ICNN/CCNPF drift is therefore a structured, reusable displacement field rather than a kernel average or a one-batch Sinkhorn assignment.
+              <span class="math">\(V_{\omega}(z)=T_{\omega}(z)-z\)</span>. By Brenier's theorem, gradients of convex potentials are the natural form of quadratic-cost optimal transport maps <sup><a class="citation" href="#ref-brenier">[4]</a></sup>, <sup><a class="citation" href="#ref-villani">[5]</a></sup>. ICNNs provide a neural parameterization that enforces convexity with respect to the input by construction <sup><a class="citation" href="#ref-amos">[3]</a></sup>. The resulting ICNN/CCNPF drift is therefore a structured, reusable displacement field rather than a kernel average or a one-batch Sinkhorn assignment.
             </p>
 
             <p>
@@ -188,7 +188,7 @@
               <span class="step-number">01</span>
               <h3>Drifting and Sinkhorn-drifting models</h3>
               <p>
-                Deng et al. introduced generative modeling via drifting, where a one-step generator is trained by pushing particles with a cross-minus-self velocity field <a href="#ref-deng">[1]</a>. He et al. connected this view to Sinkhorn-divergence gradient flows and showed why full Sinkhorn normalization improves temperature robustness and identifiability <a href="#ref-he">[2]</a>. Our method keeps the drifting objective, but changes how the vector field is represented.
+                Deng et al. introduced generative modeling via drifting, where a one-step generator is trained by pushing particles with a cross-minus-self velocity field <sup><a class="citation" href="#ref-deng">[1]</a></sup>. He et al. connected this view to Sinkhorn-divergence gradient flows and showed why full Sinkhorn normalization improves temperature robustness and identifiability <sup><a class="citation" href="#ref-he">[2]</a></sup>. Our method keeps the drifting objective, but changes how the vector field is represented.
               </p>
             </article>
 
@@ -204,7 +204,7 @@
               <span class="step-number">03</span>
               <h3>Brenier maps and ICNNs</h3>
               <p>
-                Brenier's theorem states that the quadratic-cost optimal transport map is the gradient of a convex potential under standard regularity assumptions <a href="#ref-brenier">[4]</a>, <a href="#ref-villani">[5]</a>. Amos et al. introduced input-convex neural networks, whose architecture enforces convexity with respect to the input <a href="#ref-amos">[3]</a>. This directly motivates a drift of the form <span class="math">\(\nabla\psi_{\omega}(z)-z\)</span>.
+                Brenier's theorem states that the quadratic-cost optimal transport map is the gradient of a convex potential under standard regularity assumptions <sup><a class="citation" href="#ref-brenier">[4]</a></sup>, <sup><a class="citation" href="#ref-villani">[5]</a></sup>. Amos et al. introduced input-convex neural networks, whose architecture enforces convexity with respect to the input <sup><a class="citation" href="#ref-amos">[3]</a></sup>. This directly motivates a drift of the form <span class="math">\(\nabla\psi_{\omega}(z)-z\)</span>.
               </p>
             </article>
 
@@ -212,7 +212,7 @@
               <span class="step-number">04</span>
               <h3>Neural OT and OT-guided generation</h3>
               <p>
-                Makkuva et al. used ICNNs to learn optimal transport maps via the Kantorovich dual <a href="#ref-makkuva">[6]</a>, and subsequent neural-OT work scales this idea to broader settings <a href="#ref-korotin">[7]</a>, <a href="#ref-bunne">[8]</a>. Related work also uses minibatch OT to guide flow matching <a href="#ref-pooladian">[9]</a>, <a href="#ref-tong">[10]</a>, while kernel and Sinkhorn generative losses are earlier relatives of distribution matching <a href="#ref-li">[13]</a>, <a href="#ref-genevay">[15]</a>.
+                Makkuva et al. used ICNNs to learn optimal transport maps via the Kantorovich dual <sup><a class="citation" href="#ref-makkuva">[6]</a></sup>, and subsequent neural-OT work scales this idea to broader settings <sup><a class="citation" href="#ref-korotin">[7]</a></sup>, <sup><a class="citation" href="#ref-bunne">[8]</a></sup>. Related work also uses minibatch OT to guide flow matching <sup><a class="citation" href="#ref-pooladian">[9]</a></sup>, <sup><a class="citation" href="#ref-tong">[10]</a></sup>, while kernel and Sinkhorn generative losses are earlier relatives of distribution matching <sup><a class="citation" href="#ref-li">[13]</a></sup>, <sup><a class="citation" href="#ref-genevay">[15]</a></sup>.
               </p>
             </article>
           </div>
