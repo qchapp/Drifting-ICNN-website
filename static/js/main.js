@@ -241,6 +241,12 @@ async function generateDigitSample(digit) {
   return {
     imageUrl,
     caption: `${DIGIT_GENERATION_METHOD.toUpperCase()} live sample for digit ${digit}`,
+    metrics: {
+      inferenceMs: methodPayload.inference_ms,
+      clfConfidence: methodPayload.clf_confidence,
+      clfPrediction: methodPayload.clf_prediction,
+      correct: methodPayload.correct,
+    },
   };
 }
 
@@ -248,6 +254,7 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
   const selector  = document.querySelector('.digit-selector');
   const btnGen    = document.getElementById('btn-generate');
   const output    = document.getElementById('widget-output');
+  const metrics   = document.getElementById('widget-metrics');
   const caption   = document.getElementById('widget-caption');
 
   if (!selector || !btnGen || !output) return;
@@ -269,18 +276,59 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
     output.appendChild(messageNode);
   }
 
+  function clearMetrics() {
+    if (metrics) {
+      metrics.innerHTML = '';
+      metrics.dataset.state = '';
+    }
+  }
+
+  function renderMetrics(metricData, noteText) {
+    if (!metrics) return;
+
+    if (!metricData) {
+      metrics.dataset.state = 'fallback';
+      metrics.innerHTML = noteText
+        ? `<p class="widget-metrics-note">${noteText}</p>`
+        : '';
+      return;
+    }
+
+    const confidence = typeof metricData.clfConfidence === 'number'
+      ? `${(metricData.clfConfidence * 100).toFixed(1)}%`
+      : 'n/a';
+    const inferenceMs = typeof metricData.inferenceMs === 'number'
+      ? `${metricData.inferenceMs.toFixed(1)} ms`
+      : 'n/a';
+    const prediction = Number.isFinite(metricData.clfPrediction)
+      ? String(metricData.clfPrediction)
+      : 'n/a';
+    const correct = typeof metricData.correct === 'boolean'
+      ? (metricData.correct ? 'yes' : 'no')
+      : 'n/a';
+
+    metrics.dataset.state = 'live';
+    metrics.innerHTML = `
+      <div class="widget-metric"><span>Inference</span><strong>${inferenceMs}</strong></div>
+      <div class="widget-metric"><span>Confidence</span><strong>${confidence}</strong></div>
+      <div class="widget-metric"><span>Prediction</span><strong>${prediction}</strong></div>
+      <div class="widget-metric"><span>Correct</span><strong>${correct}</strong></div>
+    `;
+  }
+
   function setCaption(text) {
     if (caption) {
       caption.textContent = text;
     }
   }
 
-  function renderImage(imageUrl, altText, captionText) {
+  function renderImage(imageUrl, altText, captionText, metricData = null, metricNote = '') {
     const img = document.createElement('img');
     img.src = imageUrl;
     img.alt = altText;
     output.innerHTML = '';
     output.appendChild(img);
+    renderMetrics(metricData, metricNote);
     setCaption(captionText);
   }
 
@@ -310,6 +358,8 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
       : 'Select a digit and click Generate.';
   }
 
+  clearMetrics();
+
   updateButtonState();
 
   btnGen.addEventListener('click', async () => {
@@ -323,13 +373,19 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
         try {
           const liveSample = await generateDigitSample(selectedDigit);
           if (liveSample) {
-            renderImage(liveSample.imageUrl, `Generated image of digit ${selectedDigit}`, liveSample.caption);
+            renderImage(
+              liveSample.imageUrl,
+              `Generated image of digit ${selectedDigit}`,
+              liveSample.caption,
+              liveSample.metrics,
+            );
             return;
           }
         } catch (error) {
           console.warn('Live generation failed, falling back to the pre-generated bank.', error);
           setOutputMessage(`Live generation failed (${error.message}). Showing a saved fallback sample.`);
           setCaption('The Space responded with an error, so the widget is using the saved bank instead.');
+          renderMetrics(null, 'Live metrics are unavailable for saved samples.');
         }
       }
 
@@ -359,12 +415,15 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
       renderImage(
         pool[idx],
         `Pre-generated sample of digit ${selectedDigit}`,
-        `Saved sample ${idx + 1} / ${pool.length} — digit "${selectedDigit}" — NPF / ICNN conditional generator`
+        `Saved sample ${idx + 1} / ${pool.length} — digit "${selectedDigit}" — NPF / ICNN conditional generator`,
+        null,
+        'Live metrics are unavailable for saved samples.'
       );
     } catch (error) {
       console.error(error);
       setOutputMessage('Could not generate a sample. Check the live endpoint or the fallback data path.');
       setCaption('');
+      clearMetrics();
     } finally {
       isGenerating = false;
       updateButtonState();

@@ -344,7 +344,7 @@
             <h2>Class-conditional MNIST samples</h2>
             <div class="prose">
               <p>
-                Explore qualitative outputs from our class-conditional CCNPF/ICNN MNIST generator. Choose a target digit from 0 to 9, then press <strong>Generate</strong> to display one generated sample for that class.
+                Explore qualitative outputs from our class-conditional CCNPF/ICNN MNIST generator. Choose a target digit from 0 to 9, then press <strong>Generate</strong> to display one generated sample for that class. We also evaluate each live sample with the exact MNISTClassifier used during training, so the confidence and prediction metrics reflect the same model family that guided the experiments.
               </p>
               <p>
                 The demo makes the generator behavior easy to inspect directly on the project page. When the live Space endpoint is configured, repeated clicks trigger a fresh generation; otherwise the page falls back to saved samples so the demo still works offline.
@@ -375,6 +375,7 @@
                   <span>Select a digit, then generate a sample.</span>
                 </div>
               </div>
+              <div class="widget-metrics" id="widget-metrics" aria-live="polite"></div>
               <p class="widget-caption" id="widget-caption"></p>
             </div>
           </div>

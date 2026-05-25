@@ -1313,6 +1313,51 @@ tbody tr.best td:first-child::after {
   line-height: 1.45;
 }
 
+.generation-widget .widget-metrics {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.generation-widget .widget-metric {
+  padding: 0.72rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--bg-card) 84%, transparent);
+}
+
+.generation-widget .widget-metric span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.generation-widget .widget-metric strong {
+  display: block;
+  margin-top: 0.28rem;
+  color: var(--text);
+  font-size: 0.98rem;
+  font-weight: 850;
+}
+
+.generation-widget .widget-metrics[data-state="fallback"] {
+  display: block;
+}
+
+.generation-widget .widget-metrics-note {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border: 1px dashed var(--line);
+  border-radius: 16px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  background: color-mix(in srgb, var(--bg-card) 70%, transparent);
+}
+
 @media (max-width: 1080px) {
   .generation-layout {
     grid-template-columns: 1fr;
