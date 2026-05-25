@@ -8,9 +8,9 @@
       "classAccuracy": 0.817,
       "minClassAccuracy": 0.562,
       "latentStdGap": 0.0719,
-      "runtimeSeconds": 0.040,
+      "runtimeSeconds": 0.04,
       "qualityScore": 0.28,
-      "takeaway": "Fastest method; strong runtime baseline but weaker semantic fidelity."
+      "takeaway": "Fastest baseline; strong runtime but lower semantic coverage and global quality than CCNPF."
     },
     {
       "method": "OT-direct",
@@ -22,19 +22,19 @@
       "latentStdGap": 0.1853,
       "runtimeSeconds": 0.198,
       "qualityScore": 0.52,
-      "takeaway": "Best class transport and accuracy, but weaker FID and latent diversity."
+      "takeaway": "Best class accuracy, but worse global distributional metrics and latent diversity."
     },
     {
       "method": "CCNPF",
       "sw2": 0.01008,
-      "classW2": 1.400,
+      "classW2": 1.4,
       "featureFid": 87.95,
-      "classAccuracy": 0.940,
+      "classAccuracy": 0.94,
       "minClassAccuracy": 0.792,
       "latentStdGap": 0.0396,
       "runtimeSeconds": 1.379,
       "qualityScore": 0.88,
-      "takeaway": "Best aggregate quality and FID; computationally the most expensive."
+      "takeaway": "Best overall quality score, Sliced W2, FID, and latent std gap; runtime remains the bottleneck."
     }
   ]
 }
