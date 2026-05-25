@@ -1669,3 +1669,115 @@ tbody tr.best td:first-child::after {
     columns: 1;
   }
 }
+
+/* ── Slide-aligned content additions ─────────────────────────────── */
+.equation-card {
+  margin: 1.1rem 0;
+  padding: 1.15rem 1.25rem;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, transparent), color-mix(in srgb, var(--accent-2) 5%, transparent)),
+    var(--bg-card);
+}
+
+.equation-card p {
+  margin-bottom: 0.55rem;
+}
+
+.equation-card p:last-child {
+  margin-bottom: 0;
+}
+
+.equation-title {
+  color: var(--accent) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.equation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.experiment-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.mini-fact {
+  padding: 1rem 1.1rem;
+}
+
+.mini-fact strong {
+  display: block;
+  color: var(--text);
+  font-size: 1.25rem;
+  letter-spacing: -0.035em;
+}
+
+.mini-fact span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.reference-card summary::after {
+  content: "  — click to expand";
+  color: var(--muted-2);
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.reference-card[open] summary::after {
+  content: "  — click to collapse";
+}
+
+@media (max-width: 1080px) {
+  .equation-grid,
+  .experiment-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .equation-grid,
+  .experiment-facts {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+/* ── LaTeX / MathJax rendering ───────────────────────────────────── */
+.math {
+  color: var(--math-color);
+  white-space: normal;
+}
+
+mjx-container {
+  color: var(--math-color);
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.05rem 0;
+}
+
+.equation-card mjx-container {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.equation-card p:last-child {
+  overflow-x: auto;
+}
+
+@media (max-width: 760px) {
+  mjx-container {
+    font-size: 94% !important;
+  }
+}
