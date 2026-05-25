@@ -20,6 +20,22 @@
         document.documentElement.dataset.theme = savedTheme === 'dark' ? 'dark' : 'light';
       })();
     </script>
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [['\\(', '\\)']],
+          displayMath: [['\\[', '\\]']],
+          processEscapes: true
+        },
+        options: {
+          skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        },
+        chtml: {
+          scale: 1.0
+        }
+      };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
     <link rel="stylesheet" href="./static/css/styles.css" />
   </head>
   <body>
@@ -106,12 +122,12 @@
           <div class="prose large">
             <p>
               Drifting generative models train a one-step generator by moving its push-forward distribution
-              <span class="math">q<sub>θ</sub> = f<sub>θ</sub>#p<sub>ε</sub></span> along a velocity field during training. Inference remains simple:
-              a single forward pass <span class="math">x = f<sub>θ</sub>(ε)</span> produces a sample. The original kernel drift pulls generated samples toward data and pushes them away from other generated samples, but it is sensitive to the kernel temperature and is only defined on the current particle batch.
+              <span class="math">\(q_{\theta} = {f_{\theta}}_{\#}p_{\varepsilon}\)</span> along a velocity field during training. Inference remains simple:
+              a single forward pass <span class="math">\(x = f_{\theta}(\varepsilon)\)</span> produces a sample. The original kernel drift pulls generated samples toward data and pushes them away from other generated samples, but it is sensitive to the kernel temperature and is only defined on the current particle batch.
             </p>
             <p>
               We replace this particle-local drift with a Brenier-style displacement field. The drift is written as
-              <span class="math">V<sub>ω</sub>(z)=∇ψ<sub>ω</sub>(z)-z</span>, where <span class="math">ψ<sub>ω</sub></span> is an input-convex neural network. This makes the update a learned, globally defined transport map rather than a batch-only kernel rule.
+              <span class="math">\(V_{\omega}(z)=\nabla\psi_{\omega}(z)-z\)</span>, where <span class="math">\(\psi_{\omega}\)</span> is an input-convex neural network. This makes the update a learned, globally defined transport map rather than a batch-only kernel rule.
             </p>
             <p>
               On MNIST, using a frozen VAE encoder, class-balanced batches, 5000 outer iterations, and the same generator MLP across methods, our cycle-consistent neural potential field variant (CCNPF) obtains the best global distributional quality: Sliced W2 of <strong>0.01008</strong>, feature FID of <strong>87.95</strong>, and mean normalized quality score of <strong>0.88</strong>. The cost is runtime: <strong>1.379 seconds</strong> per iteration, compared with <strong>0.040 seconds</strong> for the kernel baseline.
@@ -128,15 +144,15 @@
           </div>
           <div class="prose">
             <p>
-              The starting point of the project is the drifting framework: instead of sampling through many denoising or flow steps at inference time, we train a generator whose samples are repeatedly displaced during training. Each generated latent <span class="math">x=f<sub>θ</sub>(ε)</span> is pushed toward a target point <span class="math">x + V<sub>p<sub>data</sub>,q<sub>θ</sub></sub>(x)</span>, and the generator is regressed onto that stopped-gradient target.
+              The starting point of the project is the drifting framework: instead of sampling through many denoising or flow steps at inference time, we train a generator whose samples are repeatedly displaced during training. Each generated latent <span class="math">\(x=f_{\theta}(\varepsilon)\)</span> is pushed toward a target point <span class="math">\(x + V_{p_{\mathrm{data}},q_{\theta}}(x)\)</span>, and the generator is regressed onto that stopped-gradient target.
             </p>
             <div class="equation-card">
               <p class="equation-title">Drifting update</p>
-              <p><span class="math">target: x ↦ x + V<sub>p<sub>data</sub>,q<sub>θ</sub></sub>(x)</span></p>
-              <p><span class="math">L<sub>drift</sub>(θ)=E<sub>ε</sub> ||x − stopgrad(x+V(x))||²</span></p>
+              <p><span class="math">\(\text{target: } x \mapsto x + V_{p_{\mathrm{data}},q_{\theta}}(x)\)</span></p>
+              <p><span class="math">\(L_{\mathrm{drift}}(\theta)=\mathbb{E}_{\varepsilon}\lVert x-\operatorname{stopgrad}(x+V(x))\rVert^2\)</span></p>
             </div>
             <p>
-              Kernel drifting provides a useful baseline because its attraction-repulsion field is cheap and anti-symmetric: if the model distribution already equals the data distribution, the drift vanishes. The fragile part is the converse. A vanishing kernel drift does not automatically prove distributional equality without additional non-degeneracy assumptions, and the behavior depends strongly on the temperature <span class="math">τ</span>.
+              Kernel drifting provides a useful baseline because its attraction-repulsion field is cheap and anti-symmetric: if the model distribution already equals the data distribution, the drift vanishes. The fragile part is the converse. A vanishing kernel drift does not automatically prove distributional equality without additional non-degeneracy assumptions, and the behavior depends strongly on the temperature <span class="math">\(\tau\)</span>.
             </p>
             <p>
               Our goal is therefore to keep the one-step drifting training loop, but replace the hand-designed kernel drift with a structured, reusable vector field that better reflects the geometry of optimal transport.
@@ -170,7 +186,7 @@
               <span class="step-number">02</span>
               <h3>Kernel drift and its fragility</h3>
               <p>
-                The kernel baseline pulls each generated sample toward data and repels it from generated peers using <span class="math">k(x,y)=exp(-||x-y||/τ)</span>. This gives an intuitive attraction-repulsion rule, but the slide motivation highlights three weaknesses: temperature sensitivity, weak converse identifiability, and the absence of a global reusable field.
+                The kernel baseline pulls each generated sample toward data and repels it from generated peers using <span class="math">\(k(x,y)=\exp(-\lVert x-y\rVert/\tau)\)</span>. This gives an intuitive attraction-repulsion rule, but the slide motivation highlights three weaknesses: temperature sensitivity, weak converse identifiability, and the absence of a global reusable field.
               </p>
             </article>
 
@@ -178,7 +194,7 @@
               <span class="step-number">03</span>
               <h3>Brenier maps and ICNNs</h3>
               <p>
-                Brenier's theorem states that the quadratic-cost optimal transport map is the gradient of a convex potential under standard regularity assumptions <a href="#ref-brenier">[4]</a>, <a href="#ref-villani">[5]</a>. Amos et al. introduced input-convex neural networks, whose architecture enforces convexity with respect to the input <a href="#ref-amos">[3]</a>. This directly motivates a drift of the form <span class="math">∇ψ<sub>ω</sub>(z)-z</span>.
+                Brenier's theorem states that the quadratic-cost optimal transport map is the gradient of a convex potential under standard regularity assumptions <a href="#ref-brenier">[4]</a>, <a href="#ref-villani">[5]</a>. Amos et al. introduced input-convex neural networks, whose architecture enforces convexity with respect to the input <a href="#ref-amos">[3]</a>. This directly motivates a drift of the form <span class="math">\(\nabla\psi_{\omega}(z)-z\)</span>.
               </p>
             </article>
 
@@ -228,39 +244,39 @@
               <span class="step-number">01</span>
               <h3>Drifting update</h3>
               <p>
-                Sample <span class="math">ε ∼ p<sub>ε</sub></span>, generate <span class="math">x=f<sub>θ</sub>(ε)</span>, compute a drift target <span class="math">x+V(x)</span>, and regress the generator onto this stopped-gradient target. The drift shapes training, not inference.
+                Sample <span class="math">\(\varepsilon \sim p_{\varepsilon}\)</span>, generate <span class="math">\(x=f_{\theta}(\varepsilon)\)</span>, compute a drift target <span class="math">\(x+V(x)\)</span>, and regress the generator onto this stopped-gradient target. The drift shapes training, not inference.
               </p>
             </article>
             <article class="card step-card">
               <span class="step-number">02</span>
               <h3>Kernel baseline</h3>
               <p>
-                The baseline uses an attraction term toward data and a repulsion term away from generated peers. It is fast, but depends sharply on <span class="math">τ</span> and is recomputed from scratch on every batch.
+                The baseline uses an attraction term toward data and a repulsion term away from generated peers. It is fast, but depends sharply on <span class="math">\(\tau\)</span> and is recomputed from scratch on every batch.
               </p>
             </article>
             <article class="card step-card">
               <span class="step-number">03</span>
               <h3>Brenier displacement</h3>
               <p>
-                Under quadratic cost, the Monge map has the form <span class="math">T*=∇Ψ*</span>. We therefore define the drift as <span class="math">V*(x)=∇Ψ*(x)-x</span>, giving an optimal-transport-motivated displacement field.
+                Under quadratic cost, the Monge map has the form <span class="math">\(T^*=\nabla\Psi^*\)</span>. We therefore define the drift as <span class="math">\(V^*(x)=\nabla\Psi^*(x)-x\)</span>, giving an optimal-transport-motivated displacement field.
               </p>
             </article>
             <article class="card step-card">
               <span class="step-number">04</span>
               <h3>CCNPF / ICNN</h3>
               <p>
-                We parameterize <span class="math">Ψ<sub>ω</sub></span> with an ICNN and train a cycle-consistent neural potential field. Non-negative cascade weights and PSD quadratic terms preserve convexity in the latent input.
+                We parameterize <span class="math">\(\Psi_{\omega}\)</span> with an ICNN and train a cycle-consistent neural potential field. Non-negative cascade weights and PSD quadratic terms preserve convexity in the latent input.
               </p>
             </article>
           </div>
           <div class="equation-grid">
             <article class="card equation-card">
               <p class="equation-title">Monge objective</p>
-              <p><span class="math">W²₂(q<sub>θ</sub>,p<sub>data</sub>) = inf<sub>T#q<sub>θ</sub>=p<sub>data</sub></sub> E ||X - T(X)||²</span></p>
+              <p><span class="math">\(W_2^2(q_{\theta},p_{\mathrm{data}})=\inf_{T_{\#}q_{\theta}=p_{\mathrm{data}}}\mathbb{E}\lVert X-T(X)\rVert^2\)</span></p>
             </article>
             <article class="card equation-card">
               <p class="equation-title">Learned displacement</p>
-              <p><span class="math">T<sub>ω</sub>(z)=∇ψ<sub>ω</sub>(z), &nbsp; V<sub>ω</sub>(z)=T<sub>ω</sub>(z)-z</span></p>
+              <p><span class="math">\(T_{\omega}(z)=\nabla\psi_{\omega}(z),\quad V_{\omega}(z)=T_{\omega}(z)-z\)</span></p>
             </article>
           </div>
           <article class="card method-figure-card">
@@ -424,15 +440,15 @@
           <div class="fix-grid">
             <article class="card fix-card">
               <h3>Equilibrium axiom</h3>
-              <p>For anti-symmetric drifting fields, <span class="math">q<sub>θ</sub>=p<sub>data</sub></span> implies the drift vanishes. This is necessary for a sensible training target.</p>
+              <p>For anti-symmetric drifting fields, <span class="math">\(q_{\theta}=p_{\mathrm{data}}\)</span> implies the drift vanishes. This is necessary for a sensible training target.</p>
             </article>
             <article class="card fix-card">
               <h3>Kernel converse gap</h3>
-              <p>The kernel drift needs a delicate non-degeneracy condition for the converse direction <span class="math">V=0 ⇒ q<sub>θ</sub>=p<sub>data</sub></span>.</p>
+              <p>The kernel drift needs a delicate non-degeneracy condition for the converse direction <span class="math">\(V=0 \Rightarrow q_{\theta}=p_{\mathrm{data}}\)</span>.</p>
             </article>
             <article class="card fix-card">
               <h3>Temperature sensitivity</h3>
-              <p>The kernel scale <span class="math">τ</span> controls the attraction-repulsion behavior: too small encourages collapse; too large makes the drift nearly constant.</p>
+              <p>The kernel scale <span class="math">\(\tau\)</span> controls the attraction-repulsion behavior: too small encourages collapse; too large makes the drift nearly constant.</p>
             </article>
             <article class="card fix-card">
               <h3>Particle-local field</h3>

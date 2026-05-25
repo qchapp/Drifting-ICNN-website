@@ -1706,3 +1706,33 @@ tbody tr.best td:first-child::after {
   }
 }
 
+
+
+/* ── LaTeX / MathJax rendering ───────────────────────────────────── */
+.math {
+  color: var(--math-color);
+  white-space: normal;
+}
+
+mjx-container {
+  color: var(--math-color);
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.05rem 0;
+}
+
+.equation-card mjx-container {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.equation-card p:last-child {
+  overflow-x: auto;
+}
+
+@media (max-width: 760px) {
+  mjx-container {
+    font-size: 94% !important;
+  }
+}
