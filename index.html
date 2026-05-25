@@ -59,7 +59,7 @@
             <p class="eyebrow">CS-503 Visual Intelligence · Final Project</p>
             <h1>Convex-Potential Drift Fields</h1>
             <p class="subtitle">
-              Replacing kernel drift fields with gradients of input-convex neural networks in drifting generative models.
+              Brenier-displacement drifting: learning a convex potential whose gradient pushes one-step generator samples toward the data distribution.
             </p>
             <p class="authors">
               Quentin Chappuis · Johan I. A. Bordet · Satyam Chauhan · Alireza Abdollahpoorrostam
@@ -91,7 +91,7 @@
             </div>
             <figure class="hero-figure-wrap">
               <img class="hero-figure" src="./static/images/mnist_quality_scorecard.png" alt="Normalized quality scorecard comparing Kernel, OT-direct, and CCNPF." />
-              <figcaption>CCNPF obtains the strongest mean normalized quality score, while paying a higher per-iteration runtime.</figcaption>
+              <figcaption>Final MNIST slides summary: CCNPF wins the global quality score, while runtime remains the main bottleneck.</figcaption>
             </figure>
           </aside>
         </div>
@@ -101,14 +101,20 @@
         <div class="shell two-column">
           <div>
             <p class="section-kicker">Abstract</p>
-            <h2>A convex-potential replacement for kernel drift</h2>
+            <h2>Brenier-displacement drifting for one-step generation</h2>
           </div>
           <div class="prose large">
             <p>
-              Drifting generative models iteratively move generated samples toward the data distribution using a drift field. The original formulation uses a kernel-based drift, which is simple and fast but has limited structure. We study whether this drift can be replaced by the gradient of an input-convex neural network (ICNN), giving a map of the form <span class="math">T<sub>ω</sub>(z)=∇ψ<sub>ω</sub>(z)</span> and a drift <span class="math">V<sub>ω</sub>(z)=∇ψ<sub>ω</sub>(z)-z</span>.
+              Drifting generative models train a one-step generator by moving its push-forward distribution
+              <span class="math">q<sub>θ</sub> = f<sub>θ</sub>#p<sub>ε</sub></span> along a velocity field during training. Inference remains simple:
+              a single forward pass <span class="math">x = f<sub>θ</sub>(ε)</span> produces a sample. The original kernel drift pulls generated samples toward data and pushes them away from other generated samples, but it is sensitive to the kernel temperature and is only defined on the current particle batch.
             </p>
             <p>
-              Our final experiments run in a frozen, whitened 6D MNIST VAE latent space and compare kernel drift, direct Sinkhorn OT drift, and our cycle-consistent neural potential field variant (CCNPF). CCNPF achieves the best equal-iteration Sliced W2 score (0.01008), best feature FID (87.95), and best latent standard-deviation gap (0.0396), but it is much slower than the kernel baseline: 1.379 seconds per iteration versus 0.040 seconds. The main conclusion is therefore not only that the convex-potential drift can improve sample quality on this benchmark, but also that its inner optimization cost remains the central limitation.
+              We replace this particle-local drift with a Brenier-style displacement field. The drift is written as
+              <span class="math">V<sub>ω</sub>(z)=∇ψ<sub>ω</sub>(z)-z</span>, where <span class="math">ψ<sub>ω</sub></span> is an input-convex neural network. This makes the update a learned, globally defined transport map rather than a batch-only kernel rule.
+            </p>
+            <p>
+              On MNIST, using a frozen VAE encoder, class-balanced batches, 5000 outer iterations, and the same generator MLP across methods, our cycle-consistent neural potential field variant (CCNPF) obtains the best global distributional quality: Sliced W2 of <strong>0.01008</strong>, feature FID of <strong>87.95</strong>, and mean normalized quality score of <strong>0.88</strong>. The cost is runtime: <strong>1.379 seconds</strong> per iteration, compared with <strong>0.040 seconds</strong> for the kernel baseline.
             </p>
           </div>
         </div>
@@ -118,14 +124,22 @@
         <div class="shell two-column align-start">
           <div>
             <p class="section-kicker">Introduction</p>
-            <h2>Why replace the drift?</h2>
+            <h2>Generation stays one-step; training supplies the motion</h2>
           </div>
           <div class="prose">
             <p>
-              The problem we address is how to learn a drift field for a generator without relying on a hand-designed kernel. A kernel drift is attractive because it is inexpensive and stable, but the resulting vector field is not explicitly constrained to be the gradient of a convex transport potential. In contrast, optimal transport theory tells us that, under a quadratic cost, the optimal map has Brenier structure: it is the gradient of a convex function.
+              The starting point of the project is the drifting framework: instead of sampling through many denoising or flow steps at inference time, we train a generator whose samples are repeatedly displaced during training. Each generated latent <span class="math">x=f<sub>θ</sub>(ε)</span> is pushed toward a target point <span class="math">x + V<sub>p<sub>data</sub>,q<sub>θ</sub></sub>(x)</span>, and the generator is regressed onto that stopped-gradient target.
+            </p>
+            <div class="equation-card">
+              <p class="equation-title">Drifting update</p>
+              <p><span class="math">target: x ↦ x + V<sub>p<sub>data</sub>,q<sub>θ</sub></sub>(x)</span></p>
+              <p><span class="math">L<sub>drift</sub>(θ)=E<sub>ε</sub> ||x − stopgrad(x+V(x))||²</span></p>
+            </div>
+            <p>
+              Kernel drifting provides a useful baseline because its attraction-repulsion field is cheap and anti-symmetric: if the model distribution already equals the data distribution, the drift vanishes. The fragile part is the converse. A vanishing kernel drift does not automatically prove distributional equality without additional non-degeneracy assumptions, and the behavior depends strongly on the temperature <span class="math">τ</span>.
             </p>
             <p>
-              This motivates replacing the kernel drift by an ICNN potential. If the potential is convex in the latent variable, its gradient defines a structured transport map. The practical challenge is that this structure is useful only if the ICNN can be trained stably inside the generator loop. Much of our project therefore focuses on diagnostics: preventing collapse, making the selection metric meaningful, and separating true quality improvements from artifacts of the objective.
+              Our goal is therefore to keep the one-step drifting training loop, but replace the hand-designed kernel drift with a structured, reusable vector field that better reflects the geometry of optimal transport.
             </p>
           </div>
         </div>
@@ -136,10 +150,10 @@
           <div class="section-heading split">
             <div>
               <p class="section-kicker">Related work</p>
-              <h2>Where our method fits in the literature</h2>
+              <h2>From drifting to convex neural transport</h2>
             </div>
             <p>
-              The project connects one-step drifting generators with optimal-transport theory and neural convex potentials. We use bracketed citations below and provide a compact bibliography at the end of the section.
+              The slides organize the literature around three links: one-step drifting generators, kernel/Sinkhorn transport fields, and Brenier maps parameterized by input-convex neural networks. The bibliography is collapsed by default; expand it for the full list.
             </p>
           </div>
 
@@ -148,36 +162,36 @@
               <span class="step-number">01</span>
               <h3>Drifting and Sinkhorn-drifting models</h3>
               <p>
-                Deng et al. introduced generative modeling via drifting, where a one-step generator is trained by moving samples with a cross-minus-self kernel drift <a href="#ref-deng">[1]</a>. He et al. later interpreted this drift as a Sinkhorn-divergence gradient-flow approximation and showed that full Sinkhorn normalization improves temperature robustness and identifiability <a href="#ref-he">[2]</a>. Our work keeps the drifting training loop but replaces the coupling-defined drift with a learned convex-potential map.
+                Deng et al. introduced generative modeling via drifting, where a one-step generator is trained by pushing particles with a cross-minus-self velocity field <a href="#ref-deng">[1]</a>. He et al. connected this view to Sinkhorn-divergence gradient flows and showed why full Sinkhorn normalization improves temperature robustness and identifiability <a href="#ref-he">[2]</a>. Our method keeps the drifting objective, but changes how the vector field is represented.
               </p>
             </article>
 
             <article class="card step-card related-card">
               <span class="step-number">02</span>
-              <h3>Convex potentials and Brenier maps</h3>
+              <h3>Kernel drift and its fragility</h3>
               <p>
-                Brenier's theorem states that, under quadratic cost and suitable regularity, the optimal transport map is the gradient of a convex function <a href="#ref-brenier">[4]</a>, a perspective also developed in Villani's optimal transport text <a href="#ref-villani">[5]</a>. Amos et al. introduced input-convex neural networks, whose architecture enforces convexity with respect to the input <a href="#ref-amos">[3]</a>. These results motivate modeling the drift as <span class="math">∇ψ<sub>ω</sub>(z)-z</span>.
+                The kernel baseline pulls each generated sample toward data and repels it from generated peers using <span class="math">k(x,y)=exp(-||x-y||/τ)</span>. This gives an intuitive attraction-repulsion rule, but the slide motivation highlights three weaknesses: temperature sensitivity, weak converse identifiability, and the absence of a global reusable field.
               </p>
             </article>
 
             <article class="card step-card related-card">
               <span class="step-number">03</span>
-              <h3>Neural optimal transport</h3>
+              <h3>Brenier maps and ICNNs</h3>
               <p>
-                Makkuva et al. used ICNNs to learn optimal transport maps through a Kantorovich-dual formulation <a href="#ref-makkuva">[6]</a>. Korotin et al. extended neural OT to larger-scale saddle-point objectives <a href="#ref-korotin">[7]</a>, and Bunne et al. trained conditional Monge maps for perturbation prediction <a href="#ref-bunne">[8]</a>. We adapt this neural-OT idea to a different setting: the ICNN is not the final generator, but the inner-loop drift field used to train a one-step generator.
+                Brenier's theorem states that the quadratic-cost optimal transport map is the gradient of a convex potential under standard regularity assumptions <a href="#ref-brenier">[4]</a>, <a href="#ref-villani">[5]</a>. Amos et al. introduced input-convex neural networks, whose architecture enforces convexity with respect to the input <a href="#ref-amos">[3]</a>. This directly motivates a drift of the form <span class="math">∇ψ<sub>ω</sub>(z)-z</span>.
               </p>
             </article>
 
             <article class="card step-card related-card">
               <span class="step-number">04</span>
-              <h3>OT-guided flows and kernel losses</h3>
+              <h3>Neural OT and OT-guided generation</h3>
               <p>
-                Minibatch OT has also been used to straighten flow-matching trajectories <a href="#ref-pooladian">[9]</a>, <a href="#ref-tong">[10]</a>, and ICNNs have been used to parameterize Wasserstein gradient flows and probability-space functionals <a href="#ref-fan">[11]</a>, <a href="#ref-alvarez">[12]</a>. Kernel and Sinkhorn generative losses, including GMMNs and Sinkhorn-divergence generative models, are earlier relatives of drifting-style distribution matching <a href="#ref-li">[13]</a>, <a href="#ref-salimans">[14]</a>, <a href="#ref-genevay">[15]</a>.
+                Makkuva et al. used ICNNs to learn optimal transport maps via the Kantorovich dual <a href="#ref-makkuva">[6]</a>, and subsequent neural-OT work scales this idea to broader settings <a href="#ref-korotin">[7]</a>, <a href="#ref-bunne">[8]</a>. Related work also uses minibatch OT to guide flow matching <a href="#ref-pooladian">[9]</a>, <a href="#ref-tong">[10]</a>, while kernel and Sinkhorn generative losses are earlier relatives of distribution matching <a href="#ref-li">[13]</a>, <a href="#ref-genevay">[15]</a>.
               </p>
             </article>
           </div>
 
-          <details class="card reference-card" open>
+          <details class="card reference-card">
             <summary>Selected references</summary>
             <ol class="references">
               <li id="ref-deng">M. Deng, H. Li, T. Li, Y. Du, and K. He. <em>Generative modeling via drifting</em>. arXiv preprint arXiv:2602.04770, 2026.</li>
@@ -204,39 +218,49 @@
         <div class="shell">
           <div class="section-heading">
             <p class="section-kicker">Method</p>
-            <h2>From kernel drift to input-convex potential</h2>
+            <h2>From attraction-repulsion to Brenier displacement</h2>
             <p>
-              We keep the drifting-generator pipeline but replace the drift field by a learned convex potential and evaluate it against two baselines.
+              The final method keeps the drifting generator loss, but replaces the kernel-defined velocity field with a convex-potential map trained inside the loop.
             </p>
           </div>
           <div class="method-grid">
             <article class="card step-card">
               <span class="step-number">01</span>
-              <h3>Encode MNIST into a stable latent space</h3>
+              <h3>Drifting update</h3>
               <p>
-                MNIST images are encoded by a convolutional VAE. We whiten the encoder means and perform all transport operations in a 6D latent space, decoding only for visualization.
+                Sample <span class="math">ε ∼ p<sub>ε</sub></span>, generate <span class="math">x=f<sub>θ</sub>(ε)</span>, compute a drift target <span class="math">x+V(x)</span>, and regress the generator onto this stopped-gradient target. The drift shapes training, not inference.
               </p>
             </article>
             <article class="card step-card">
               <span class="step-number">02</span>
-              <h3>Generate candidate latents</h3>
+              <h3>Kernel baseline</h3>
               <p>
-                A one-step generator maps Gaussian noise to latent samples. The drift update then moves these generated latents toward the empirical data latent distribution.
+                The baseline uses an attraction term toward data and a repulsion term away from generated peers. It is fast, but depends sharply on <span class="math">τ</span> and is recomputed from scratch on every batch.
               </p>
             </article>
             <article class="card step-card">
               <span class="step-number">03</span>
-              <h3>Fit a convex potential</h3>
+              <h3>Brenier displacement</h3>
               <p>
-                The learned map is <span class="math">T<sub>ω</sub>(z)=∇ψ<sub>ω</sub>(z)</span>. Non-negative cascade weights and positive semidefinite quadratic terms preserve convexity in the input.
+                Under quadratic cost, the Monge map has the form <span class="math">T*=∇Ψ*</span>. We therefore define the drift as <span class="math">V*(x)=∇Ψ*(x)-x</span>, giving an optimal-transport-motivated displacement field.
               </p>
             </article>
             <article class="card step-card">
               <span class="step-number">04</span>
-              <h3>Evaluate quality and cost</h3>
+              <h3>CCNPF / ICNN</h3>
               <p>
-                We compare Kernel, OT-direct, and CCNPF using transport metrics, semantic metrics, feature FID, latent moment gaps, training traces, and per-iteration runtime.
+                We parameterize <span class="math">Ψ<sub>ω</sub></span> with an ICNN and train a cycle-consistent neural potential field. Non-negative cascade weights and PSD quadratic terms preserve convexity in the latent input.
               </p>
+            </article>
+          </div>
+          <div class="equation-grid">
+            <article class="card equation-card">
+              <p class="equation-title">Monge objective</p>
+              <p><span class="math">W²₂(q<sub>θ</sub>,p<sub>data</sub>) = inf<sub>T#q<sub>θ</sub>=p<sub>data</sub></sub> E ||X - T(X)||²</span></p>
+            </article>
+            <article class="card equation-card">
+              <p class="equation-title">Learned displacement</p>
+              <p><span class="math">T<sub>ω</sub>(z)=∇ψ<sub>ω</sub>(z), &nbsp; V<sub>ω</sub>(z)=T<sub>ω</sub>(z)-z</span></p>
             </article>
           </div>
           <article class="card method-figure-card">
@@ -250,25 +274,32 @@
           <div class="section-heading split">
             <div>
               <p class="section-kicker">Experiments</p>
-              <h2>MNIST equal-iteration comparison</h2>
+              <h2>MNIST equilibrium, quality, and runtime</h2>
             </div>
             <p>
-              We evaluate Kernel, OT-direct, and CCNPF at matched outer iterations in the same 6D MNIST latent space. Lower is better for Sliced W2, Class W2, feature FID, and latent std gap; higher is better for accuracy metrics and normalized score.
+              The final slides evaluate Kernel, OT-direct, and CCNPF under the same MNIST setup: frozen VAE encoder, class-balanced batches, 5000 outer iterations, and the same generator MLP.
             </p>
+          </div>
+
+          <div class="experiment-facts">
+            <article class="card mini-fact"><strong>Frozen VAE</strong><span>encoder latents</span></article>
+            <article class="card mini-fact"><strong>12 per digit</strong><span>class-balanced batches</span></article>
+            <article class="card mini-fact"><strong>5000</strong><span>outer iterations</span></article>
+            <article class="card mini-fact"><strong>Same MLP</strong><span>generator for all methods</span></article>
           </div>
 
           <div class="results-layout">
             <article class="card chart-card">
               <div class="figure-header">
                 <h3>Normalized quality score</h3>
-                <p>Mean normalized score across the reported metrics. CCNPF is the strongest overall quality method in this equal-iteration comparison.</p>
+                <p>CCNPF has the highest mean normalized quality score in the slide results: 0.88 versus 0.52 for OT-direct and 0.28 for Kernel.</p>
               </div>
               <div id="quality-chart" class="chart" role="img" aria-label="Bar chart of mean normalized quality score for Kernel, OT-direct, and CCNPF."></div>
             </article>
             <article class="card figure-card compact">
               <div class="figure-header">
                 <h3>Quality scorecard</h3>
-                <p>Summary view of the mean normalized quality score.</p>
+                <p>Global distributional quality favors CCNPF.</p>
               </div>
               <img class="figure-image" src="./static/images/mnist_quality_scorecard.png" alt="Normalized quality scorecard: Kernel 0.28, OT-direct 0.52, CCNPF 0.88." />
             </article>
@@ -297,9 +328,9 @@
           <div class="figure-grid">
             <article class="card figure-card wide">
               <div class="figure-header">
-                <h3>Detailed quality metrics</h3>
+                <h3>Feature FID and Sliced W2</h3>
                 <p>
-                  CCNPF wins Sliced W2, feature FID, and latent standard-deviation gap. OT-direct is strongest on class accuracy and class transport.
+                  The slide results report CCNPF as best on feature FID (87.95) and Sliced W2 (0.01008), supporting the claim that the convex-potential drift improves global distributional quality.
                 </p>
               </div>
               <img class="figure-image" src="./static/images/mnist_quality_metrics.png" alt="Six-panel bar chart showing Sliced W2, Class W2, Feature FID, Class accuracy, minimum class accuracy, and latent std gap." />
@@ -308,16 +339,16 @@
               <div class="figure-header">
                 <h3>Training traces and inverse residual</h3>
                 <p>
-                  CCNPF keeps the inverse residual below the guardrail and shows stable training traces, supporting the claim that the learned potential remains numerically controlled.
+                  The appendix traces show generator loss, drift norm, and a CCNPF inverse residual. The residual remains below the guardrail, suggesting that the cycle-consistency mechanism keeps the learned map controlled.
                 </p>
               </div>
               <img class="figure-image" src="./static/images/mnist_training_traces.png" alt="Training traces for generator loss, drift norm, and CCNPF inverse residual." />
             </article>
             <article class="card figure-card wide">
               <div class="figure-header">
-                <h3>Runtime and quality tradeoffs</h3>
+                <h3>Runtime-quality tradeoff</h3>
                 <p>
-                  The main cost of CCNPF is runtime: it improves quality but requires a much more expensive iteration than Kernel or OT-direct.
+                  CCNPF improves quality but is much slower per iteration: 1.379s compared with 0.198s for OT-direct and 0.040s for Kernel. The method is therefore quality-leading but compute-heavy.
                 </p>
               </div>
               <img class="figure-image" src="./static/images/mnist_runtime_quality_tradeoff.png" alt="Runtime per iteration, FID-runtime tradeoff, and semantic fidelity versus class transport." />
@@ -326,7 +357,7 @@
 
           <div class="callout honest">
             <strong>Interpretation.</strong>
-            The final MNIST result is stronger than the midterm picture: the ICNN-based drift now beats both baselines on the aggregate quality score and several individual quality metrics. The price is computational cost, so the method should be interpreted as a quality-improving but optimization-heavy alternative to kernel drift.
+            The slides support a sharper final message than the midterm: CCNPF wins global distributional quality on MNIST, but it does not yet solve the efficiency problem. The result validates the convex-potential direction while making runtime the central limitation.
           </div>
         </div>
       </section>
@@ -380,31 +411,31 @@
         <div class="shell">
           <div class="section-heading">
             <p class="section-kicker">Diagnostics</p>
-            <h2>Failure modes that shaped the final evaluation</h2>
+            <h2>Equilibrium and identifiability</h2>
             <p>
-              Earlier versions looked good under the old diagnostic but produced collapsed samples. These fixes make the evaluation collapse-aware and the ICNN drift numerically meaningful.
+              The slide narrative separates the necessary equilibrium property of drifting from the stronger question of whether vanishing drift implies distributional equality.
             </p>
           </div>
           <div class="fix-grid">
             <article class="card fix-card">
-              <h3>Selection metric collapse</h3>
-              <p>Replaced drift-norm selection with Sliced W2, which penalizes collapse onto the data mean.</p>
+              <h3>Equilibrium axiom</h3>
+              <p>For anti-symmetric drifting fields, <span class="math">q<sub>θ</sub>=p<sub>data</sub></span> implies the drift vanishes. This is necessary for a sensible training target.</p>
             </article>
             <article class="card fix-card">
-              <h3>Diagonal-only moments</h3>
-              <p>Replaced per-axis moment matching with a full covariance penalty to catch off-axis low-rank collapse.</p>
+              <h3>Kernel converse gap</h3>
+              <p>The kernel drift needs a delicate non-degeneracy condition for the converse direction <span class="math">V=0 ⇒ q<sub>θ</sub>=p<sub>data</sub></span>.</p>
             </article>
             <article class="card fix-card">
-              <h3>Persistent inner Adam</h3>
-              <p>Reset inner Adam per outer batch so momentum from noisy Sinkhorn targets does not leak across objectives.</p>
+              <h3>Temperature sensitivity</h3>
+              <p>The kernel scale <span class="math">τ</span> controls the attraction-repulsion behavior: too small encourages collapse; too large makes the drift nearly constant.</p>
             </article>
             <article class="card fix-card">
-              <h3>Smoothed inner target</h3>
-              <p>Compared regression-to-target with a semi-dual plus cycle-consistency variant to reduce target smoothing artifacts.</p>
+              <h3>Particle-local field</h3>
+              <p>Kernel and batch OT fields are defined at current batch particles. The ICNN potential gives a global reusable map over latent space.</p>
             </article>
             <article class="card fix-card">
-              <h3>Identity-init tightening</h3>
-              <p>Shrunk the live cascade at initialization and lowered the quadratic Hessian floor so the cascade can bend early.</p>
+              <h3>Cycle-consistency guardrail</h3>
+              <p>The CCNPF inverse residual is tracked as a guardrail for the learned forward/backward potential maps during training.</p>
             </article>
           </div>
         </div>
@@ -414,14 +445,17 @@
         <div class="shell two-column align-start">
           <div>
             <p class="section-kicker">Conclusion and limitations</p>
-            <h2>What we learned</h2>
+            <h2>Quality improves; runtime remains the bottleneck</h2>
           </div>
           <div class="prose">
             <p>
-              The main takeaway is that a convex-potential drift can be made stable inside a drifting generative model and can outperform the kernel and OT-direct baselines on several MNIST latent-space quality metrics. This supports the hypothesis that adding Brenier-map structure to the drift is useful.
+              The final conclusion is that replacing the kernel drift with a Brenier-displacement field is a meaningful direction. CCNPF gives the strongest MNIST distributional quality in our slide results, including the best Sliced W2, best feature FID, and best mean normalized score.
             </p>
             <p>
-              The main limitation is efficiency. CCNPF is more than an order of magnitude slower per iteration than the kernel baseline, so its quality advantage must be weighed against compute. The current evidence is also limited to MNIST in a low-dimensional VAE latent space. Future work should test higher-dimensional latents, add stronger spectral or gradient penalties for the semi-dual potential, and report image-level metrics on more complex datasets such as CIFAR-10 or CelebA.
+              The limitation is computational cost. The ICNN/semi-dual machinery requires substantially more work per training iteration than the kernel baseline, so the next question is how much of the quality gain can be retained with cheaper inner optimization, better warm starts, or stronger regularization of the potentials.
+            </p>
+            <p>
+              The evidence is also still limited to MNIST in a low-dimensional VAE latent space. A stronger final validation would scale the same idea to higher-dimensional latent spaces and report image-level metrics on more complex datasets such as CIFAR-10 or CelebA.
             </p>
           </div>
         </div>
@@ -435,17 +469,17 @@
               <h2>Team roles</h2>
             </div>
             <p>
-              The project combined model implementation, diagnostic debugging, evaluation, visualization, and final webpage preparation.
+              The project combined theory framing, ICNN/CCNPF implementation, diagnostics, MNIST experiments, visualization, and webpage integration.
             </p>
           </div>
           <div class="team-grid">
             <article class="card person-card">
               <h3>Quentin Chappuis</h3>
-              <p>Final webpage, result visualization, evaluation narrative, and integration of the project figures into the submission page.</p>
+              <p>Final webpage, slide-aligned narrative, result visualization, and integration of the project figures into the submission page.</p>
             </article>
             <article class="card person-card">
               <h3>Johan I. A. Bordet</h3>
-              <p>ICNN/NPF implementation support, model debugging, optimization-stability analysis, and the class-conditional generation demo.</p>
+              <p>ICNN/NPF implementation support, model debugging, optimization-stability analysis, and the class-conditional digit-generation demo.</p>
             </article>
             <article class="card person-card">
               <h3>Satyam Chauhan</h3>
@@ -453,7 +487,7 @@
             </article>
             <article class="card person-card">
               <h3>Alireza Abdollahpoorrostam</h3>
-              <p>Repository coordination, experiment pipeline, generator training setup, and report integration.</p>
+              <p>Repository coordination, experiment pipeline, generator training setup, and report/slide integration.</p>
             </article>
           </div>
         </div>
