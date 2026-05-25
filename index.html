@@ -78,7 +78,7 @@
               Brenier-displacement drifting: learning a convex potential whose gradient pushes one-step generator samples toward the data distribution.
             </p>
             <p class="authors">
-              Quentin Chappuis · Johan I. A. Bordet · Satyam Chauhan · Alireza Abdollahpoorrostam
+              Quentin Chappuis · Johan Bordet · Satyam Chauhan · Alireza Abdollahpoorrostam
             </p>
             <div class="hero-actions" aria-label="Project links">
               <a class="button primary" href="https://github.com/alirezaabdollahpour/Drifting-ICNN" target="_blank" rel="noreferrer">Code repository</a>
@@ -107,7 +107,7 @@
             </div>
             <figure class="hero-figure-wrap">
               <img class="hero-figure" src="./static/images/mnist_quality_scorecard.png" alt="Normalized quality scorecard comparing Kernel, OT-direct, and CCNPF." />
-              <figcaption>Final MNIST slides summary: CCNPF wins the global quality score, while runtime remains the main bottleneck.</figcaption>
+              <figcaption>MNIST evaluation summary: CCNPF wins the global quality score, while runtime remains the main bottleneck.</figcaption>
             </figure>
           </aside>
         </div>
@@ -140,22 +140,35 @@
         <div class="shell two-column align-start">
           <div>
             <p class="section-kicker">Introduction</p>
-            <h2>Generation stays one-step; training supplies the motion</h2>
+            <h2>Three ways to define the motion</h2>
           </div>
           <div class="prose">
             <p>
-              The starting point of the project is the drifting framework: instead of sampling through many denoising or flow steps at inference time, we train a generator whose samples are repeatedly displaced during training. Each generated latent <span class="math">\(x=f_{\theta}(\varepsilon)\)</span> is pushed toward a target point <span class="math">\(x + V_{p_{\mathrm{data}},q_{\theta}}(x)\)</span>, and the generator is regressed onto that stopped-gradient target.
+              The starting point of the project is the drifting framework: instead of sampling through many denoising or flow steps at inference time, we train a one-step generator whose samples are repeatedly displaced during training. Each generated latent <span class="math">\(x=f_{\theta}(\varepsilon)\)</span> is pushed toward a target point <span class="math">\(x + V_{p_{\mathrm{data}},q_{\theta}}(x)\)</span>, and the generator is regressed onto that stopped-gradient target.
             </p>
+
             <div class="equation-card">
               <p class="equation-title">Drifting update</p>
               <p><span class="math">\(\text{target: } x \mapsto x + V_{p_{\mathrm{data}},q_{\theta}}(x)\)</span></p>
               <p><span class="math">\(L_{\mathrm{drift}}(\theta)=\mathbb{E}_{\varepsilon}\lVert x-\operatorname{stopgrad}(x+V(x))\rVert^2\)</span></p>
             </div>
+
             <p>
-              Kernel drifting provides a useful baseline because its attraction-repulsion field is cheap and anti-symmetric: if the model distribution already equals the data distribution, the drift vanishes. The fragile part is the converse. A vanishing kernel drift does not automatically prove distributional equality without additional non-degeneracy assumptions, and the behavior depends strongly on the temperature <span class="math">\(\tau\)</span>.
+              The key question is how to choose the drift field <span class="math">\(V\)</span>. The <strong>kernel baseline</strong> defines it with an attraction-repulsion rule: generated samples are pulled toward nearby data samples and pushed away from other generated samples. This is fast and simple, but it depends strongly on the kernel temperature <span class="math">\(\tau\)</span>, and the drift is recomputed from scratch for every batch. It is therefore a local particle rule, not a reusable transport map.
             </p>
+
             <p>
-              Our goal is therefore to keep the one-step drifting training loop, but replace the hand-designed kernel drift with a structured, reusable vector field that better reflects the geometry of optimal transport.
+              A more principled alternative is <strong>direct optimal transport</strong>. Here we compute a Sinkhorn coupling between generated latents and data latents, then move each generated point toward its OT barycentric target. This gives a drift that better respects the geometry of the two empirical distributions and reduces some of the kernel sensitivity. However, it is still batch-defined: the coupling only tells us where the current particles should move, and it must be recomputed at every iteration.
+            </p>
+
+            <p>
+              Our method replaces both of these batch-local rules with a learned global map. We parameterize a convex potential <span class="math">\(\psi_{\omega}\)</span> with an input-convex neural network and define
+              <span class="math">\(T_{\omega}(z)=\nabla\psi_{\omega}(z)\)</span> and
+              <span class="math">\(V_{\omega}(z)=T_{\omega}(z)-z\)</span>. By the Brenier viewpoint, gradients of convex potentials are the natural form of quadratic-cost optimal transport maps. The resulting ICNN/CCNPF drift is therefore a structured, reusable displacement field rather than a kernel average or a one-batch Sinkhorn assignment.
+            </p>
+
+            <p>
+              In short, kernel drifting is the fastest but most heuristic option; direct OT is more geometrically grounded but remains per-batch; ICNN drifting tries to amortize the OT structure into a continuous convex-potential field. The main empirical tradeoff we observe is exactly this one: CCNPF improves global distributional quality on MNIST, but the inner optimization needed to learn the potential makes it significantly slower per iteration.
             </p>
           </div>
         </div>
@@ -168,9 +181,6 @@
               <p class="section-kicker">Related work</p>
               <h2>From drifting to convex neural transport</h2>
             </div>
-            <p>
-              The slides organize the literature around three links: one-step drifting generators, kernel/Sinkhorn transport fields, and Brenier maps parameterized by input-convex neural networks. The bibliography is collapsed by default; expand it for the full list.
-            </p>
           </div>
 
           <div class="related-work-grid">
@@ -186,7 +196,7 @@
               <span class="step-number">02</span>
               <h3>Kernel drift and its fragility</h3>
               <p>
-                The kernel baseline pulls each generated sample toward data and repels it from generated peers using <span class="math">\(k(x,y)=\exp(-\lVert x-y\rVert/\tau)\)</span>. This gives an intuitive attraction-repulsion rule, but the slide motivation highlights three weaknesses: temperature sensitivity, weak converse identifiability, and the absence of a global reusable field.
+                The kernel baseline pulls each generated sample toward data and repels it from generated peers using <span class="math">\(k(x,y)=\exp(-\lVert x-y\rVert/\tau)\)</span>. This gives an intuitive attraction-repulsion rule, but it also exposes three weaknesses that motivate our approach: temperature sensitivity, weak converse identifiability, and the absence of a global reusable field.
               </p>
             </article>
 
@@ -293,7 +303,7 @@
               <h2>MNIST equilibrium, quality, and runtime</h2>
             </div>
             <p>
-              The final slides evaluate Kernel, OT-direct, and CCNPF under the same MNIST setup: frozen VAE encoder, class-balanced batches, 5000 outer iterations, and the same generator MLP.
+              We evaluate Kernel, OT-direct, and CCNPF under the same MNIST setup: frozen VAE encoder, class-balanced batches, 5000 outer iterations, and the same generator MLP.
             </p>
           </div>
 
@@ -308,7 +318,7 @@
             <article class="card chart-card">
               <div class="figure-header">
                 <h3>Normalized quality score</h3>
-                <p>CCNPF has the highest mean normalized quality score in the slide results: 0.88 versus 0.52 for OT-direct and 0.28 for Kernel.</p>
+                <p>CCNPF has the highest mean normalized quality score in our final evaluation: 0.88 versus 0.52 for OT-direct and 0.28 for Kernel.</p>
               </div>
               <div id="quality-chart" class="chart" role="img" aria-label="Bar chart of mean normalized quality score for Kernel, OT-direct, and CCNPF."></div>
             </article>
@@ -323,7 +333,7 @@
 
           <div class="table-wrap card metrics-table-card">
             <table id="metrics-table">
-              <caption>MNIST equal-iteration quality and runtime metrics. The values are loaded from <code>static/data/results.json</code>.</caption>
+              <caption>MNIST equal-iteration quality and runtime metrics.</caption>
               <thead>
                 <tr>
                   <th>Method</th>
@@ -346,7 +356,7 @@
               <div class="figure-header">
                 <h3>Feature FID and Sliced W2</h3>
                 <p>
-                  The slide results report CCNPF as best on feature FID (87.95) and Sliced W2 (0.01008), supporting the claim that the convex-potential drift improves global distributional quality.
+                  Our evaluation reports CCNPF as best on feature FID (87.95) and Sliced W2 (0.01008), supporting the claim that the convex-potential drift improves global distributional quality.
                 </p>
               </div>
               <img class="figure-image" src="./static/images/mnist_quality_metrics.png" alt="Six-panel bar chart showing Sliced W2, Class W2, Feature FID, Class accuracy, minimum class accuracy, and latent std gap." />
@@ -373,7 +383,7 @@
 
           <div class="callout honest">
             <strong>Interpretation.</strong>
-            The slides support a sharper final message than the midterm: CCNPF wins global distributional quality on MNIST, but it does not yet solve the efficiency problem. The result validates the convex-potential direction while making runtime the central limitation.
+            The final experiments support a sharper conclusion than the midterm: CCNPF wins global distributional quality on MNIST, but it does not yet solve the efficiency problem. The result validates the convex-potential direction while making runtime the central limitation.
           </div>
         </div>
       </section>
@@ -394,7 +404,7 @@
                 Explore qualitative outputs from our class-conditional CCNPF/ICNN MNIST generator. Choose a target digit from 0 to 9, then press <strong>Generate</strong> to display one generated sample for that class. We also evaluate each live sample with the exact MNISTClassifier used during training, so the confidence and prediction metrics reflect the same model family that guided the experiments.
               </p>
               <p>
-                The demo makes the generator behavior easy to inspect directly on the project page. When the live Space endpoint is configured, repeated clicks trigger a fresh generation; otherwise the page falls back to saved samples so the demo still works offline.
+                The displayed digits are generated live through a Hugging Face Space endpoint, allowing direct qualitative inspection of our class-conditional generator.
               </p>
             </div>
           </div>
@@ -403,7 +413,7 @@
             <div class="widget-topline">
               <p class="widget-kicker">MNIST sample generator</p>
               <h3>Choose a digit</h3>
-              <p class="widget-intro">Generate a live MNIST sample when the Space endpoint is configured, or a saved fallback sample otherwise.</p>
+              <p class="widget-intro">Select a class label and generate a live MNIST digit through our Hugging Face Space endpoint.</p>
             </div>
 
             <div class="digit-selector-panel">
@@ -434,7 +444,7 @@
             <p class="section-kicker">Diagnostics</p>
             <h2>Equilibrium and identifiability</h2>
             <p>
-              The slide narrative separates the necessary equilibrium property of drifting from the stronger question of whether vanishing drift implies distributional equality.
+              Our analysis separates the necessary equilibrium property of drifting from the stronger question of whether vanishing drift implies distributional equality.
             </p>
           </div>
           <div class="fix-grid">
@@ -470,7 +480,7 @@
           </div>
           <div class="prose">
             <p>
-              The final conclusion is that replacing the kernel drift with a Brenier-displacement field is a meaningful direction. CCNPF gives the strongest MNIST distributional quality in our slide results, including the best Sliced W2, best feature FID, and best mean normalized score.
+              The final conclusion is that replacing the kernel drift with a Brenier-displacement field is a meaningful direction. CCNPF gives the strongest MNIST distributional quality in our final results, including the best Sliced W2, best feature FID, and best mean normalized score.
             </p>
             <p>
               The limitation is computational cost. The ICNN/semi-dual machinery requires substantially more work per training iteration than the kernel baseline, so the next question is how much of the quality gain can be retained with cheaper inner optimization, better warm starts, or stronger regularization of the potentials.
@@ -496,19 +506,22 @@
           <div class="team-grid">
             <article class="card person-card">
               <h3>Quentin Chappuis</h3>
-              <p>Final webpage, slide-aligned narrative, result visualization, and integration of the project figures into the submission page.</p>
+              <p>Website development, hyperparameter ablations, and support for model training experiments.</p>
             </article>
+
             <article class="card person-card">
-              <h3>Johan I. A. Bordet</h3>
-              <p>ICNN/NPF implementation support, model debugging, optimization-stability analysis, and the class-conditional digit-generation demo.</p>
+              <h3>Johan Bordet</h3>
+              <p>MNIST digit-generation demo, website integration, and support for model training experiments.</p>
             </article>
+
             <article class="card person-card">
               <h3>Satyam Chauhan</h3>
-              <p>Baseline comparisons, metric computation, diagnostic experiments, and quantitative result analysis.</p>
+              <p>Report writing, presentation slides, and support for model training experiments.</p>
             </article>
+
             <article class="card person-card">
               <h3>Alireza Abdollahpoorrostam</h3>
-              <p>Repository coordination, experiment pipeline, generator training setup, and report/slide integration.</p>
+              <p>Core codebase, model training, scaling experiments, and contributions to the reports.</p>
             </article>
           </div>
         </div>
