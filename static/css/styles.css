@@ -604,6 +604,12 @@ tbody tr.best td:first-child::after {
   color: var(--callout-text);
 }
 
+.callout.takeaway {
+  margin-top: 1.25rem;
+  border-color: rgba(101, 84, 242, 0.3);
+  background: linear-gradient(135deg, rgba(101, 84, 242, 0.08), rgba(0, 125, 138, 0.06));
+}
+
 .fix-grid {
   grid-template-columns: repeat(5, 1fr);
 }
@@ -986,6 +992,16 @@ tbody tr.best td:first-child::after {
   background: var(--figure-bg);
 }
 
+/* Pipeline diagram in method section — needs full-width and transparent background */
+.method-pipeline {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.method-pipeline img.figure-image {
+  background: var(--figure-bg);
+}
+
 /* Diagram-style figures (ICNN architecture, etc.) stay compact */
 .figure-card.diagram .figure-image {
   width: auto;
@@ -1033,6 +1049,15 @@ tbody tr.best td:first-child::after {
   width: auto;
   max-width: calc(100% - 2.4rem);
   max-height: 260px;
+  margin: 0 auto 1.2rem;
+  display: block;
+}
+
+/* Quality scorecard — centered, allowed to be larger than compact */
+.figure-card.scorecard img.figure-image {
+  width: auto;
+  max-width: min(640px, calc(100% - 2.4rem));
+  max-height: none;
   margin: 0 auto 1.2rem;
   display: block;
 }
@@ -1921,13 +1946,16 @@ tbody tr.best td:first-child::after {
 
 /* ── Experiments FFHQ subsection ─────────────────────────────────── */
 .section-subhead {
-  margin-top: 2.5rem;
+  margin-top: 3.5rem;
+  padding-top: 2.25rem;
+  border-top: 1px solid var(--line);
   margin-bottom: 1rem;
 }
 
 .section-subhead>h3 {
-  font-size: 1.35rem;
-  margin: 0 0 0.5rem;
+  font-size: 1.65rem;
+  letter-spacing: -0.038em;
+  margin: 0.35rem 0 0.65rem;
 }
 
 .ffhq-figure {

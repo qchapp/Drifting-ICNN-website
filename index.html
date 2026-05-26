@@ -36,7 +36,7 @@
     };
   </script>
   <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
-  <link rel="stylesheet" href="./static/css/styles.css?v=2026-05-25" />
+  <link rel="stylesheet" href="./static/css/styles.css?v=2026-05-26" />
 </head>
 
 <body>
@@ -139,7 +139,7 @@
             <span class="math">\(V_{\omega}(z)=\nabla\psi_{\omega}(z)-z\)</span>, where <span
               class="math">\(\psi_{\omega}\)</span> is an input-convex neural network. This choice is motivated by
             optimal transport theory: under quadratic cost, the optimal transport map has the form of the gradient of a
-            convex potential <sup><a class="citation" href="#ref-brenier">[4]</a></sup>, <sup><a class="citation"
+            convex potential <sup><a class="citation" href="#ref-brenier">[4]</a>, <a class="citation"
                 href="#ref-villani">[5]</a></sup>, and ICNNs provide a practical way to parameterize such convex
             functions <sup><a class="citation" href="#ref-amos">[3]</a></sup>.
           </p>
@@ -208,7 +208,7 @@
             <span class="math">\(T_{\omega}(z)=\nabla\psi_{\omega}(z)\)</span> and
             <span class="math">\(V_{\omega}(z)=T_{\omega}(z)-z\)</span>. By Brenier's theorem, gradients of convex
             potentials are the natural form of quadratic-cost optimal transport maps <sup><a class="citation"
-                href="#ref-brenier">[4]</a></sup>, <sup><a class="citation" href="#ref-villani">[5]</a></sup>. ICNNs
+                href="#ref-brenier">[4]</a>, <a class="citation" href="#ref-villani">[5]</a></sup>. ICNNs
             provide a neural parameterization that enforces convexity with respect to the input by construction <sup><a
                 class="citation" href="#ref-amos">[3]</a></sup>. The resulting ICNN/CCNPF drift is therefore a
             structured, reusable displacement field rather than a kernel average or a one-batch Sinkhorn assignment.
@@ -264,8 +264,8 @@
             <h3>Brenier maps and ICNNs</h3>
             <p>
               Brenier's theorem states that the quadratic-cost optimal transport map is the gradient of a convex
-              potential under standard regularity assumptions <sup><a class="citation"
-                  href="#ref-brenier">[4]</a></sup>, <sup><a class="citation" href="#ref-villani">[5]</a></sup>. Amos et
+              potential under standard regularity assumptions <sup><a class="citation" href="#ref-brenier">[4]</a>, <a
+                  class="citation" href="#ref-villani">[5]</a></sup>. Amos et
               al. introduced input-convex neural networks, whose architecture enforces convexity with respect to the
               input <sup><a class="citation" href="#ref-amos">[3]</a></sup>. This directly motivates a drift of the form
               <span class="math">\(\nabla\psi_{\omega}(z)-z\)</span>.
@@ -278,11 +278,11 @@
             <p>
               Makkuva et al. used ICNNs to learn optimal transport maps via the Kantorovich dual <sup><a
                   class="citation" href="#ref-makkuva">[6]</a></sup>, and subsequent neural-OT work scales this idea to
-              broader settings <sup><a class="citation" href="#ref-korotin">[7]</a></sup>, <sup><a class="citation"
+              broader settings <sup><a class="citation" href="#ref-korotin">[7]</a>, <a class="citation"
                   href="#ref-bunne">[8]</a></sup>. Related work also uses minibatch OT to guide flow matching <sup><a
-                  class="citation" href="#ref-pooladian">[9]</a></sup>, <sup><a class="citation"
-                  href="#ref-tong">[10]</a></sup>, while kernel and Sinkhorn generative losses are earlier relatives of
-              distribution matching <sup><a class="citation" href="#ref-li">[13]</a></sup>, <sup><a class="citation"
+                  class="citation" href="#ref-pooladian">[9]</a>, <a class="citation" href="#ref-tong">[10]</a></sup>,
+              while kernel and Sinkhorn generative losses are earlier relatives of
+              distribution matching <sup><a class="citation" href="#ref-li">[13]</a>, <a class="citation"
                   href="#ref-genevay">[15]</a></sup>.
             </p>
           </article>
@@ -473,7 +473,22 @@
             </p>
           </article>
         </div>
-        <!-- Project figures: drifting schematic and kernel drift -->
+        <!-- Full pipeline — primary method visual -->
+        <article class="card figure-card wide method-pipeline">
+          <div class="figure-header">
+            <h3>Full pipeline</h3>
+            <p>
+              Noise <span class="math">\(\varepsilon\)</span> enters the generator
+              <span class="math">\(f_{\theta}\)</span>; the ICNN potential computes the Brenier drift
+              <span class="math">\(V_{\omega}(x) = \nabla\psi_{\omega}(x) - x\)</span>; the generator is regressed
+              onto the displaced target. At inference, only a single forward pass through
+              <span class="math">\(f_{\theta}\)</span> is needed.
+            </p>
+          </div>
+          <img class="figure-image" src="./static/images/method-diagram.png"
+            alt="Drifting-ICNN full pipeline: noise input epsilon passes through the generator f-theta, the ICNN potential computes the drift, and the generator is regressed onto the displaced target." />
+        </article>
+        <!-- Supporting figures: drifting update schematic and kernel drift baseline -->
         <div class="figure-grid figure-grid-two">
           <article class="card figure-card">
             <div class="figure-header">
@@ -529,11 +544,6 @@
               alt="ICNN convex-potential parameterization: input z passes through hidden layers with non-negative cascade weights and skip connections, producing psi-omega(z) whose gradient is the transport map T-omega." />
           </article>
         </div>
-
-        <article class="card method-figure-card">
-          <img src="./static/images/method-diagram.png"
-            alt="Drifting-ICNN full pipeline: noise input epsilon passes through the generator f-theta, the ICNN potential computes the drift, and the generator is regressed onto the displaced target." />
-        </article>
       </div>
     </section>
 
@@ -557,7 +567,15 @@
           <article class="card mini-fact"><strong>Same MLP</strong><span>generator for all methods</span></article>
         </div>
 
-        <article class="card figure-card compact">
+        <div class="callout takeaway">
+          <strong>Main takeaway.</strong>
+          CCNPF achieves the best distributional quality across all measured metrics—Sliced&nbsp;W2&nbsp;(0.0101),
+          feature FID&nbsp;(87.95), and mean normalized score&nbsp;(0.88). The cost is runtime:
+          1.379&nbsp;s/iter versus 0.040&nbsp;s/iter for the kernel baseline. Quality improves; runtime remains
+          the central bottleneck.
+        </div>
+
+        <article class="card figure-card scorecard">
           <div class="figure-header">
             <h3>Quality scorecard</h3>
             <p>CCNPF achieves the highest mean normalized quality score (0.88) versus OT-direct (0.52) and Kernel
@@ -587,13 +605,13 @@
           </table>
         </div>
 
-        <div class="figure-grid figure-grid-two">
+        <div class="figure-grid">
           <article class="card figure-card wide">
             <div class="figure-header">
               <h3>Feature FID and Sliced W2</h3>
               <p>
-                Our evaluation reports CCNPF as best on feature FID (87.95) and Sliced W2 (0.01008), supporting the
-                claim that the convex-potential drift improves global distributional quality.
+                Our results show CCNPF as best on feature FID (87.95) and Sliced W2 (0.01008), consistent with
+                improved global distributional quality from the convex-potential drift.
               </p>
             </div>
             <img class="figure-image" src="./static/images/mnist_quality_metrics.png"
@@ -604,14 +622,14 @@
               <h3>Training traces and inverse residual</h3>
               <p>
                 The training traces show generator loss, drift norm, and a CCNPF inverse residual over 5000 outer
-                iterations. The residual remains below the guardrail, confirming that the cycle-consistency mechanism
+                iterations. The residual remains below the guardrail, suggesting that the cycle-consistency mechanism
                 keeps the learned map well-controlled throughout training.
               </p>
             </div>
             <img class="figure-image" src="./static/images/mnist_training_traces.png"
               alt="Training traces for generator loss, drift norm, and CCNPF inverse residual." />
           </article>
-          <article class="card figure-card wide full-span">
+          <article class="card figure-card wide">
             <div class="figure-header">
               <h3>Runtime-quality tradeoff</h3>
               <p>
@@ -626,13 +644,16 @@
 
         <!-- FFHQ experiment -->
         <div class="section-subhead">
+          <p class="section-kicker">Beyond MNIST</p>
           <h3>FFHQ class-conditional generation (ALAE latents)</h3>
           <p class="prose">
-            We also evaluate all three methods on FFHQ class-conditional generation using ALAE encoder latents <sup><a
-                class="citation" href="#ref-makkuva">[6]</a></sup>, with six classes (male/female &times;
+            We also evaluate all three methods on FFHQ class-conditional generation using ALAE encoder latents
+            <!-- TODO: add correct ALAE reference (Pidhorskyi et al.) once bibliographic info is confirmed -->
+            <sup><a class="citation" href="#ref-makkuva">[6]</a></sup>,
+            with six classes (male/female &times;
             children/adult/old). The equal-outer-iteration comparison below uses the same metrics as MNIST. CCNPF again
             achieves the best distributional quality (SW<sub>2</sub><sup>2</sup> = 0.002, acc = 0.983, std gap =
-            0.022), confirming that the Brenier-potential drift generalizes beyond the toy MNIST setting. The runtime
+            0.022), suggesting that the Brenier-potential drift generalizes beyond the MNIST setting. The runtime
             cost (0.426 s/iter) remains the primary bottleneck relative to the kernel baseline (0.016 s/iter).
           </p>
         </div>
@@ -694,7 +715,7 @@
         <div class="callout honest">
           <strong>Interpretation.</strong>
           Across both MNIST and FFHQ, CCNPF achieves the strongest global distributional quality: lowest Sliced W2, best
-          classifier accuracy, and lowest per-class std gap. These results validate the convex-potential direction as a
+          classifier accuracy, and lowest per-class std gap. These results support the convex-potential direction as a
           principled improvement over kernel and direct-OT drifts, while making runtime the central open problem.
         </div>
       </div>
