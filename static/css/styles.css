@@ -27,7 +27,7 @@
   --button-hover-bg: rgba(255, 255, 255, 0.95);
   --primary-button-text: #06262d;
   --brand-bg: linear-gradient(135deg, rgba(0, 125, 138, 0.12), rgba(101, 84, 242, 0.1));
-  --panel-bg: linear-gradient(160deg, rgba(255,255,255,0.92), rgba(255,255,255,0.58));
+  --panel-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.58));
   --panel-glow: radial-gradient(circle, rgba(0, 125, 138, 0.18), transparent 68%);
   --mini-bg: rgba(255, 255, 255, 0.76);
   --mini-border: rgba(15, 23, 42, 0.11);
@@ -41,9 +41,9 @@
   --callout-bg: linear-gradient(135deg, rgba(0, 125, 138, 0.09), rgba(101, 84, 242, 0.065));
   --footer-bg: rgba(255, 255, 255, 0.54);
   --mobile-nav-bg: rgba(255, 255, 255, 0.96);
-  --chart-surface: rgba(255,255,255,0.5);
-  --chart-grid: rgba(15,23,42,0.09);
-  --chart-axis: rgba(15,23,42,0.22);
+  --chart-surface: rgba(255, 255, 255, 0.5);
+  --chart-grid: rgba(15, 23, 42, 0.09);
+  --chart-axis: rgba(15, 23, 42, 0.22);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -72,7 +72,7 @@
   --button-hover-bg: rgba(255, 255, 255, 0.1);
   --primary-button-text: #021318;
   --brand-bg: linear-gradient(135deg, rgba(116, 224, 214, 0.2), rgba(155, 140, 255, 0.16));
-  --panel-bg: linear-gradient(160deg, rgba(255,255,255,0.12), rgba(255,255,255,0.035));
+  --panel-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035));
   --panel-glow: radial-gradient(circle, rgba(116, 224, 214, 0.34), transparent 67%);
   --mini-bg: rgba(6, 10, 20, 0.62);
   --mini-border: rgba(255, 255, 255, 0.12);
@@ -86,10 +86,11 @@
   --callout-bg: linear-gradient(135deg, rgba(116, 224, 214, 0.12), rgba(155, 140, 255, 0.08));
   --footer-bg: rgba(0, 0, 0, 0.12);
   --mobile-nav-bg: rgba(8, 13, 26, 0.96);
-  --chart-surface: rgba(255,255,255,0.025);
-  --chart-grid: rgba(255,255,255,0.09);
-  --chart-axis: rgba(255,255,255,0.2);
+  --chart-surface: rgba(255, 255, 255, 0.025);
+  --chart-grid: rgba(255, 255, 255, 0.09);
+  --chart-axis: rgba(255, 255, 255, 0.2);
 }
+
 * {
   box-sizing: border-box;
 }
@@ -246,7 +247,7 @@ code {
 }
 
 .section {
-  padding: 96px 0;
+  padding: 80px 0;
   scroll-margin-top: var(--header-h);
 }
 
@@ -256,7 +257,7 @@ code {
 }
 
 .hero {
-  min-height: calc(100vh - var(--header-h));
+  min-height: min(calc(100vh - var(--header-h)), 900px);
   display: flex;
   align-items: center;
   padding-top: 68px;
@@ -595,7 +596,7 @@ tbody tr.best td:first-child::after {
 }
 
 .callout {
-  margin-top: 1rem;
+  margin-top: 1.75rem;
   padding: 1.25rem 1.35rem;
   border-radius: var(--radius-sm);
   border: 1px solid rgba(116, 224, 214, 0.24);
@@ -657,6 +658,7 @@ tbody tr.best td:first-child::after {
 }
 
 @media (max-width: 1080px) {
+
   .hero-grid,
   .two-column,
   .section-heading.split,
@@ -712,7 +714,7 @@ tbody tr.best td:first-child::after {
   }
 
   .section {
-    padding: 72px 0;
+    padding: 64px 0;
   }
 
   .hero {
@@ -769,13 +771,44 @@ tbody tr.best td:first-child::after {
   font-size: 0.9rem;
 }
 
-.chart svg { width: 100%; height: auto; }
-.chart-value { fill: var(--text); font-size: 18px; font-weight: 800; }
-.chart-label { fill: var(--muted); font-size: 16px; font-weight: 700; }
-.axis-label { fill: var(--muted-2); font-size: 14px; }
-.axis-title { fill: var(--accent); font-size: 15px; font-weight: 800; letter-spacing: 0.04em; }
-.grid-line { stroke: var(--chart-grid); stroke-width: 1; }
-.axis-line { stroke: var(--chart-axis); stroke-width: 1.2; }
+.chart svg {
+  width: 100%;
+  height: auto;
+}
+
+.chart-value {
+  fill: var(--text);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.chart-label {
+  fill: var(--muted);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.axis-label {
+  fill: var(--muted-2);
+  font-size: 14px;
+}
+
+.axis-title {
+  fill: var(--accent);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.grid-line {
+  stroke: var(--chart-grid);
+  stroke-width: 1;
+}
+
+.axis-line {
+  stroke: var(--chart-axis);
+  stroke-width: 1.2;
+}
 
 @media (max-width: 760px) {
   .theme-toggle {
@@ -848,9 +881,18 @@ tbody tr.best td:first-child::after {
   transition: opacity 0.15s, transform 0.1s;
 }
 
-.btn-generate:hover { opacity: 0.88; }
-.btn-generate:active { transform: scale(0.97); }
-.btn-generate:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-generate:hover {
+  opacity: 0.88;
+}
+
+.btn-generate:active {
+  transform: scale(0.97);
+}
+
+.btn-generate:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 .widget-output {
   width: 180px;
@@ -869,13 +911,21 @@ tbody tr.best td:first-child::after {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  image-rendering: pixelated;   /* keeps the MNIST pixel aesthetic */
+  image-rendering: pixelated;
+  /* keeps the MNIST pixel aesthetic */
   animation: pop-in 0.18s ease;
 }
 
 @keyframes pop-in {
-  from { opacity: 0; transform: scale(0.88); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .output-placeholder {
@@ -901,6 +951,7 @@ tbody tr.best td:first-child::after {
     font-size: 0.92rem;
   }
 }
+
 /* ── Final webpage additions ───────────────────────────────────── */
 .hero-figure-wrap {
   position: relative;
@@ -919,23 +970,53 @@ tbody tr.best td:first-child::after {
 }
 
 .method-figure-card {
-  margin-top: 1rem;
-  padding: 1.2rem;
+  margin-top: 1.25rem;
+  padding: 1rem;
   overflow: hidden;
 }
 
 .method-figure-card img {
-  width: 100%;
+  width: auto;
+  max-width: 100%;
+  max-height: 340px;
+  display: block;
+  margin: 0 auto;
   border: 1px solid var(--line);
-  border-radius: 22px;
+  border-radius: 20px;
   background: var(--figure-bg);
+}
+
+/* Diagram-style figures (ICNN architecture, etc.) stay compact */
+.figure-card.diagram .figure-image {
+  width: auto;
+  max-width: calc(100% - 2.4rem);
+  max-height: 360px;
+  margin: 0 auto 1.2rem;
+  display: block;
 }
 
 .figure-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
+  gap: 1.25rem;
   margin-top: 1rem;
+}
+
+.figure-grid.figure-grid-two {
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+/* Last item in an odd position spans both columns (e.g. 3 items → third is full-width) */
+.figure-grid.figure-grid-two>.full-span {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 760px) {
+  .figure-grid.figure-grid-two {
+    grid-template-columns: 1fr;
+  }
 }
 
 .figure-card.wide img.figure-image,
@@ -948,11 +1029,17 @@ tbody tr.best td:first-child::after {
 }
 
 .figure-card.compact img.figure-image {
-  object-fit: contain;
+  /* Constrain height so bar charts don't dominate the card */
+  width: auto;
+  max-width: calc(100% - 2.4rem);
+  max-height: 260px;
+  margin: 0 auto 1.2rem;
+  display: block;
 }
 
 .metrics-table-card {
   margin-top: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .results-layout .compact {
@@ -1052,9 +1139,20 @@ tbody tr.best td:first-child::after {
   transition: opacity 160ms ease, transform 160ms ease;
 }
 
-.btn-generate:hover { opacity: 0.9; transform: translateY(-1px); }
-.btn-generate:active { transform: scale(0.98); }
-.btn-generate:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.btn-generate:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-generate:active {
+  transform: scale(0.98);
+}
+
+.btn-generate:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
 
 .widget-output {
   width: min(220px, 58vw);
@@ -1144,6 +1242,7 @@ tbody tr.best td:first-child::after {
     flex-direction: column;
     align-items: flex-start;
   }
+
   .widget-instructions span {
     text-align: left;
   }
@@ -1427,6 +1526,7 @@ tbody tr.best td:first-child::after {
 }
 
 @media (max-width: 760px) {
+
   .widget-topline,
   .widget-action-row {
     grid-template-columns: 1fr;
@@ -1819,6 +1919,21 @@ tbody tr.best td:first-child::after {
   font-size: 0.92rem;
 }
 
+/* ── Experiments FFHQ subsection ─────────────────────────────────── */
+.section-subhead {
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.section-subhead>h3 {
+  font-size: 1.35rem;
+  margin: 0 0 0.5rem;
+}
+
+.ffhq-figure {
+  margin-bottom: 1.5rem;
+}
+
 .reference-card summary::after {
   content: "  — click to expand";
   color: var(--muted-2);
@@ -1831,6 +1946,7 @@ tbody tr.best td:first-child::after {
 }
 
 @media (max-width: 1080px) {
+
   .equation-grid,
   .experiment-facts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1838,6 +1954,7 @@ tbody tr.best td:first-child::after {
 }
 
 @media (max-width: 760px) {
+
   .equation-grid,
   .experiment-facts {
     grid-template-columns: 1fr;

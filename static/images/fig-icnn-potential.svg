@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 340" role="img"
+     aria-label="ICNN convex-potential parameterization: input z feeds forward through layers with non-negative cascade weights exp(W-y) and direct skip connections back to each layer, producing convex potential psi-omega(z) whose gradient is the optimal transport map">
+  <defs>
+    <marker id="fwd" markerWidth="8" markerHeight="7" refX="7.5" refY="3.5" orient="auto">
+      <polygon points="0 0,8 3.5,0 7" fill="#2d7a7a"/>
+    </marker>
+    <marker id="skp" markerWidth="8" markerHeight="7" refX="7.5" refY="3.5" orient="auto">
+      <polygon points="0 0,8 3.5,0 7" fill="#6554f2"/>
+    </marker>
+    <style>
+      .ic { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="940" height="340" rx="20" fill="#ffffff"/>
+
+  <!-- Top label: direct skip connections -->
+  <text x="470" y="22" class="ic" font-size="13" fill="#6554f2" text-anchor="middle" font-style="italic">direct linear skip connections from z</text>
+
+  <!-- ── z input box ── -->
+  <rect x="28" y="80" width="108" height="128" rx="14" fill="#eaf4f4" stroke="#2d7a7a" stroke-width="2"/>
+  <text x="82" y="154" class="ic" font-size="30" font-style="italic" font-weight="700" fill="#2d7a7a" text-anchor="middle">z</text>
+
+  <!-- ── Hidden layer y1 ── -->
+  <rect x="188" y="64" width="138" height="160" rx="14" fill="#eaf4f4" stroke="#2d7a7a" stroke-width="2"/>
+  <text x="257" y="122" class="ic" font-size="16" font-weight="700" fill="#1f2937" text-anchor="middle">y₁ · σ</text>
+  <line x1="192" y1="138" x2="322" y2="138" stroke="#d1d5db" stroke-width="1"/>
+  <text x="257" y="162" class="ic" font-size="12" fill="#6554f2" text-anchor="middle">exp(Wʸ) ≥ 0</text>
+
+  <!-- ── Hidden layer y2 ── -->
+  <rect x="380" y="64" width="138" height="160" rx="14" fill="#eaf4f4" stroke="#2d7a7a" stroke-width="2"/>
+  <text x="449" y="122" class="ic" font-size="16" font-weight="700" fill="#1f2937" text-anchor="middle">y₂ · σ</text>
+  <line x1="384" y1="138" x2="514" y2="138" stroke="#d1d5db" stroke-width="1"/>
+  <text x="449" y="162" class="ic" font-size="12" fill="#6554f2" text-anchor="middle">exp(Wʸ) ≥ 0</text>
+
+  <!-- ── Dots ── -->
+  <circle cx="566" cy="144" r="5" fill="#9ca3af"/>
+  <circle cx="586" cy="144" r="5" fill="#9ca3af"/>
+  <circle cx="606" cy="144" r="5" fill="#9ca3af"/>
+
+  <!-- ── Hidden layer yL ── -->
+  <rect x="626" y="64" width="138" height="160" rx="14" fill="#eaf4f4" stroke="#2d7a7a" stroke-width="2"/>
+  <text x="695" y="122" class="ic" font-size="16" font-weight="700" fill="#1f2937" text-anchor="middle">yᴸ · σ</text>
+  <line x1="630" y1="138" x2="760" y2="138" stroke="#d1d5db" stroke-width="1"/>
+  <text x="695" y="162" class="ic" font-size="12" fill="#6554f2" text-anchor="middle">exp(Wʸ) ≥ 0</text>
+
+  <!-- ── Output box psi_omega(z) [purple] ── -->
+  <rect x="812" y="72" width="110" height="144" rx="14" fill="#f0eeff" stroke="#6554f2" stroke-width="2"/>
+  <text x="867" y="130" class="ic" font-size="16" font-style="italic" font-weight="700" fill="#6554f2" text-anchor="middle">ψω(z)</text>
+  <line x1="816" y1="146" x2="918" y2="146" stroke="#d1d5db" stroke-width="1"/>
+  <text x="867" y="170" class="ic" font-size="12" fill="#6554f2" text-anchor="middle">scalar</text>
+
+  <!-- ── Forward arrows ── -->
+  <line x1="136" y1="144" x2="186" y2="144" stroke="#2d7a7a" stroke-width="2" marker-end="url(#fwd)"/>
+  <line x1="326" y1="144" x2="378" y2="144" stroke="#2d7a7a" stroke-width="2" marker-end="url(#fwd)"/>
+  <line x1="518" y1="144" x2="555" y2="144" stroke="#2d7a7a" stroke-width="2" marker-end="url(#fwd)"/>
+  <line x1="617" y1="144" x2="624" y2="144" stroke="#2d7a7a" stroke-width="2" marker-end="url(#fwd)"/>
+  <line x1="764" y1="144" x2="810" y2="144" stroke="#2d7a7a" stroke-width="2" marker-end="url(#fwd)"/>
+
+  <!-- ── Dashed skip arcs from z ── -->
+  <!-- z -> y1 -->
+  <path d="M82,80 C82,38 257,38 257,64" fill="none" stroke="#6554f2" stroke-width="1.6" stroke-dasharray="6,3" marker-end="url(#skp)"/>
+  <!-- z -> y2 -->
+  <path d="M82,80 C82,22 449,22 449,64" fill="none" stroke="#6554f2" stroke-width="1.6" stroke-dasharray="6,3" marker-end="url(#skp)"/>
+  <!-- z -> psi_omega -->
+  <path d="M82,80 C82,8 867,8 867,72" fill="none" stroke="#6554f2" stroke-width="1.6" stroke-dasharray="6,3" marker-end="url(#skp)"/>
+
+  <!-- ── T and V annotations below output ── -->
+  <line x1="867" y1="216" x2="867" y2="234" stroke="#6554f2" stroke-width="1.4" stroke-dasharray="3,2"/>
+  <circle cx="867" cy="237" r="3.5" fill="#6554f2"/>
+  <text x="867" y="258" class="ic" font-size="13" font-style="italic" fill="#6554f2" text-anchor="middle">Tω(z) = ∇₂ ψω(z)</text>
+  <text x="867" y="278" class="ic" font-size="13" font-style="italic" fill="#6554f2" text-anchor="middle">Vω(z) = Tω(z) − z</text>
+
+  <!-- ── Legend ── -->
+  <line x1="100" y1="312" x2="140" y2="312" stroke="#2d7a7a" stroke-width="2" marker-end="url(#fwd)"/>
+  <text x="148" y="317" class="ic" font-size="12" fill="#374151">forward (cascade) connections</text>
+  <line x1="420" y1="312" x2="460" y2="312" stroke="#6554f2" stroke-width="1.6" stroke-dasharray="6,3" marker-end="url(#skp)"/>
+  <text x="468" y="317" class="ic" font-size="12" fill="#374151">direct linear skip connections from z</text>
+</svg>

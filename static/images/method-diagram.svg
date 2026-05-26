@@ -1,52 +1,99 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 420" role="img" aria-label="Drifting-ICNN method diagram">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 440" role="img"
+     aria-label="Drifting-ICNN full pipeline: Gaussian noise through the generator produces a latent z, the ICNN convex potential computes the drift field T-omega and V-omega, and the VAE decoder produces the MNIST image. An inner fitting loop trains the potential.">
   <defs>
-    <linearGradient id="box" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.98"/>
-      <stop offset="1" stop-color="#edf7fa" stop-opacity="0.98"/>
+    <linearGradient id="pl-bg1" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#eaf4f4" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#f0f4f8" stop-opacity="0.9"/>
     </linearGradient>
-    <linearGradient id="accent" x1="0" x2="1" y1="0" y2="0">
-      <stop offset="0" stop-color="#007d8a"/>
-      <stop offset="1" stop-color="#6554f2"/>
+    <linearGradient id="pl-bg2" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#f0eeff" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#ede9fe" stop-opacity="0.95"/>
     </linearGradient>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
-      <path d="M0,0 L0,6 L9,3 z" fill="#007d8a" />
+    <marker id="pl-a" markerWidth="10" markerHeight="9" refX="9" refY="4.5" orient="auto">
+      <polygon points="0 0,10 4.5,0 9" fill="#2d7a7a"/>
+    </marker>
+    <marker id="pl-ap" markerWidth="8" markerHeight="7" refX="7" refY="3.5" orient="auto">
+      <polygon points="0 0,8 3.5,0 7" fill="#6554f2"/>
     </marker>
     <style>
-      .title{font:700 25px Inter,Arial,sans-serif;fill:#111827}.sub{font:500 17px Inter,Arial,sans-serif;fill:#516071}.math{font:700 26px Inter,Arial,sans-serif;fill:#007d8a}.small{font:600 15px Inter,Arial,sans-serif;fill:#516071}.box{fill:url(#box);stroke:rgba(15,23,42,.16);stroke-width:2}.arrow{stroke:#007d8a;stroke-width:4;fill:none;marker-end:url(#arrow)}
+      .pl { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
     </style>
   </defs>
-  <rect width="1180" height="420" rx="34" fill="#f7f9fc"/>
-  <circle cx="108" cy="78" r="118" fill="#007d8a" opacity="0.08"/>
-  <circle cx="1010" cy="335" r="148" fill="#6554f2" opacity="0.09"/>
 
-  <rect class="box" x="55" y="118" width="190" height="160" rx="24"/>
-  <text class="title" x="150" y="168" text-anchor="middle">Noise</text>
-  <text class="math" x="150" y="205" text-anchor="middle">ε ~ N(0,I)</text>
-  <text class="sub" x="150" y="238" text-anchor="middle">input seed</text>
+  <!-- Page background blobs -->
+  <circle cx="110" cy="90" r="140" fill="#eaf4f4" opacity="0.55"/>
+  <circle cx="1060" cy="340" r="160" fill="#ede9fe" opacity="0.45"/>
+  <circle cx="900" cy="60" r="90"  fill="#f0eeff" opacity="0.35"/>
 
-  <path class="arrow" d="M250 198 H330"/>
+  <!-- ── Box 1: Noise ── -->
+  <rect x="45" y="112" width="188" height="198" rx="22" fill="url(#pl-bg1)" stroke="#2d7a7a" stroke-width="1.8"/>
+  <!-- Noise icon: scattered dots -->
+  <circle cx="115" cy="150" r="4" fill="#2d7a7a" opacity="0.5"/>
+  <circle cx="128" cy="142" r="3" fill="#2d7a7a" opacity="0.4"/>
+  <circle cx="105" cy="162" r="3" fill="#2d7a7a" opacity="0.4"/>
+  <circle cx="138" cy="158" r="4" fill="#2d7a7a" opacity="0.5"/>
+  <circle cx="120" cy="170" r="3" fill="#2d7a7a" opacity="0.4"/>
+  <circle cx="108" cy="178" r="3" fill="#2d7a7a" opacity="0.35"/>
+  <circle cx="132" cy="172" r="4" fill="#2d7a7a" opacity="0.45"/>
+  <circle cx="145" cy="145" r="3" fill="#2d7a7a" opacity="0.35"/>
+  <text x="139" y="205" class="pl" font-size="20" font-weight="800" fill="#1f2937" text-anchor="middle">Noise</text>
+  <text x="139" y="228" class="pl" font-size="14" font-style="italic" fill="#2d7a7a" text-anchor="middle">ε ~ N(0, I)</text>
+  <text x="139" y="250" class="pl" font-size="12" fill="#6b7280" text-anchor="middle">input seed</text>
 
-  <rect class="box" x="342" y="118" width="220" height="160" rx="24"/>
-  <text class="title" x="452" y="160" text-anchor="middle">Generator</text>
-  <text class="math" x="452" y="198" text-anchor="middle">x = fθ(ε)</text>
-  <text class="sub" x="452" y="232" text-anchor="middle">6D whitened latent</text>
+  <!-- Arrow 1 → 2 -->
+  <line x1="233" y1="211" x2="284" y2="211" stroke="#2d7a7a" stroke-width="3" marker-end="url(#pl-a)"/>
 
-  <path class="arrow" d="M568 198 H648"/>
+  <!-- ── Box 2: Generator ── -->
+  <rect x="287" y="112" width="188" height="198" rx="22" fill="url(#pl-bg1)" stroke="#2d7a7a" stroke-width="1.8"/>
+  <!-- Network icon: nodes + edges -->
+  <circle cx="340" cy="148" r="10" fill="none" stroke="#2d7a7a" stroke-width="1.5"/>
+  <circle cx="381" cy="148" r="10" fill="none" stroke="#2d7a7a" stroke-width="1.5"/>
+  <circle cx="340" cy="175" r="10" fill="none" stroke="#2d7a7a" stroke-width="1.5"/>
+  <circle cx="381" cy="175" r="10" fill="none" stroke="#2d7a7a" stroke-width="1.5"/>
+  <line x1="350" y1="148" x2="371" y2="148" stroke="#2d7a7a" stroke-width="1.2"/>
+  <line x1="350" y1="175" x2="371" y2="175" stroke="#2d7a7a" stroke-width="1.2"/>
+  <line x1="350" y1="152" x2="371" y2="171" stroke="#2d7a7a" stroke-width="1.2"/>
+  <text x="381" y="205" class="pl" font-size="20" font-weight="800" fill="#1f2937" text-anchor="middle">Generator</text>
+  <text x="381" y="228" class="pl" font-size="14" font-style="italic" fill="#2d7a7a" text-anchor="middle">z = fθ(ε)</text>
+  <text x="381" y="250" class="pl" font-size="12" fill="#6b7280" text-anchor="middle">6D whitened latent</text>
 
-  <rect class="box" x="660" y="84" width="250" height="228" rx="24"/>
-  <text class="title" x="785" y="132" text-anchor="middle">Convex potential</text>
-  <text class="math" x="785" y="172" text-anchor="middle">Tω(x)=∇ψω(x)</text>
-  <text class="sub" x="785" y="208" text-anchor="middle">ICNN / CCNPF drift</text>
-  <text class="small" x="785" y="247" text-anchor="middle">convexity via non-negative</text>
-  <text class="small" x="785" y="270" text-anchor="middle">cascade weights + PSD terms</text>
+  <!-- Arrow 2 → 3 -->
+  <line x1="475" y1="211" x2="525" y2="211" stroke="#2d7a7a" stroke-width="3" marker-end="url(#pl-a)"/>
 
-  <path class="arrow" d="M916 198 H990"/>
+  <!-- "learned transport / drift field" dotted label above box 3 -->
+  <line x1="720" y1="75" x2="720" y2="108" stroke="#6554f2" stroke-width="1.4" stroke-dasharray="3,2"/>
+  <circle cx="720" cy="112" r="3.5" fill="#6554f2"/>
+  <text x="720" y="64" class="pl" font-size="12" fill="#6554f2" text-anchor="middle" font-style="italic">learned transport / drift field</text>
 
-  <rect class="box" x="1002" y="118" width="128" height="160" rx="24"/>
-  <text class="title" x="1066" y="165" text-anchor="middle">Decode</text>
-  <text class="math" x="1066" y="202" text-anchor="middle">z → y</text>
-  <text class="sub" x="1066" y="235" text-anchor="middle">MNIST</text>
+  <!-- ── Box 3: Convex Potential (large, purple border) ── -->
+  <rect x="528" y="76" width="384" height="268" rx="24" fill="url(#pl-bg2)" stroke="#6554f2" stroke-width="2.4"/>
+  <!-- Icon: convex curve smile -->
+  <path d="M686,118 Q720,148 754,118" fill="none" stroke="#6554f2" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="686" cy="118" r="4" fill="#6554f2"/>
+  <circle cx="754" cy="118" r="4" fill="#6554f2"/>
+  <text x="720" y="162" class="pl" font-size="19" font-weight="800" fill="#1f2937" text-anchor="middle">Convex potential</text>
+  <text x="720" y="186" class="pl" font-size="15" font-style="italic" fill="#2d7a7a" text-anchor="middle">Tω(z) = ∇ψω(z)</text>
+  <text x="720" y="206" class="pl" font-size="11" fill="#6b7280" text-anchor="middle">ICNN / CCNPF drift</text>
+  <line x1="548" y1="218" x2="892" y2="218" stroke="#d1d5db" stroke-width="1"/>
+  <text x="720" y="236" class="pl" font-size="11" fill="#6b7280" text-anchor="middle">convexity via non-negative cascade weights + PSD terms</text>
+  <line x1="548" y1="250" x2="892" y2="250" stroke="#d1d5db" stroke-width="1"/>
+  <text x="720" y="274" class="pl" font-size="15" font-style="italic" fill="#6554f2" text-anchor="middle">Vω(z) = Tω(z) − z</text>
 
-  <path d="M781 316 C760 360, 700 360, 672 318" stroke="url(#accent)" stroke-width="4" fill="none" stroke-dasharray="8 10"/>
-  <text class="small" x="726" y="383" text-anchor="middle">inner potential fitting + cycle-consistency diagnostics</text>
+  <!-- Arrow 3 → 4 -->
+  <line x1="912" y1="211" x2="960" y2="211" stroke="#2d7a7a" stroke-width="3" marker-end="url(#pl-a)"/>
+
+  <!-- ── Box 4: Decode ── -->
+  <rect x="963" y="112" width="188" height="198" rx="22" fill="url(#pl-bg1)" stroke="#2d7a7a" stroke-width="1.8"/>
+  <!-- Digit icon: pixelated "7" shape -->
+  <rect x="1033" y="138" width="36" height="5" rx="2" fill="#2d7a7a" opacity="0.6"/>
+  <rect x="1055" y="138" width="5" height="20" rx="2" fill="#2d7a7a" opacity="0.6"/>
+  <rect x="1036" y="158" width="24" height="5" rx="2" fill="#2d7a7a" opacity="0.4"/>
+  <rect x="1033" y="163" width="5" height="14" rx="2" fill="#2d7a7a" opacity="0.5"/>
+  <text x="1057" y="205" class="pl" font-size="20" font-weight="800" fill="#1f2937" text-anchor="middle">Decode</text>
+  <text x="1057" y="228" class="pl" font-size="14" font-style="italic" fill="#2d7a7a" text-anchor="middle">z → y</text>
+  <text x="1057" y="250" class="pl" font-size="12" fill="#6b7280" text-anchor="middle">MNIST image</text>
+
+  <!-- ── Dashed arc below: inner potential fitting ── -->
+  <path d="M720,344 C720,390 528,402 528,344" fill="none" stroke="#6554f2" stroke-width="1.8" stroke-dasharray="7,4" marker-end="url(#pl-ap)"/>
+  <text x="610" y="418" class="pl" font-size="12" fill="#6554f2" text-anchor="middle" font-style="italic">inner potential fitting + cycle-consistency diagnostics</text>
 </svg>
