@@ -498,6 +498,25 @@ h3 {
   padding: 1.35rem;
 }
 
+.method-kernel {
+  border: none;
+  background: linear-gradient(135deg, color-mix(in srgb, #0049b8 10%, var(--bg-card)), color-mix(in srgb, #0049b8 5%, var(--bg-card)));
+}
+
+.method-ot {
+  border: none;
+  background: linear-gradient(135deg, color-mix(in srgb, #7b3ff2 8%, var(--bg-card)), color-mix(in srgb, #7b3ff2 4%, var(--bg-card)));
+}
+
+.method-ccnpf {
+  border: none;
+  background: linear-gradient(135deg, color-mix(in srgb, #f28c28 8%, var(--bg-card)), color-mix(in srgb, #f28c28 4%, var(--bg-card)));
+}
+
+.method-grid.three .equation-card {
+  background: transparent;
+}
+
 .step-number {
   display: inline-grid;
   place-items: center;
@@ -972,7 +991,8 @@ tbody tr.best td:first-child::after {
 }
 
 .method-grid.three {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  align-items: stretch;
 }
 
 .method-figure-card {
@@ -1080,11 +1100,6 @@ tbody tr.best td:first-child::after {
   margin-bottom: 0.65rem;
 }
 
-@media (max-width: 1080px) {
-  .method-grid.three {
-    grid-template-columns: 1fr;
-  }
-}
 
 @media (max-width: 760px) {
   .figure-header {
@@ -2006,12 +2021,8 @@ mjx-container {
 }
 
 .equation-card mjx-container {
-  display: inline-block;
-  vertical-align: middle;
-}
-
-.equation-card p:last-child {
-  overflow-x: auto;
+  display: block !important;
+  width: 100% !important;
 }
 
 @media (max-width: 760px) {

@@ -178,13 +178,6 @@
             <p class="equation-title">One-step generator goal</p>
             <p><span class="math">\(q_{\theta} = {f_{\theta}}_{\#}p_{\varepsilon}\ \approx p_{\mathrm{data}}\)</span></p>
           </div>
-          <div class="equation-card">
-            <p class="equation-title">Update Rule</p>
-            <p><span class="math">\(\text{target: } x \mapsto x + V_{p_{\mathrm{data}},q_{\theta}}(x), \quad x =
-                f_{\theta}(\varepsilon)\)</span></p>
-            <p><span class="math">\(\mathcal{L}_{\mathrm{drift}}(\theta)=\mathbb{E}_{\varepsilon}\lVert
-                x-\operatorname{stopgrad}(x+V(x))\rVert^2\)</span></p>
-          </div>
 
           <p>
             The critical design choice in this framework is the definition of the drift field <span class="math">\(V\)</span>. 
@@ -361,66 +354,110 @@
       <div class="shell">
         <div class="section-heading">
           <p class="section-kicker">Method</p>
-          <h2>From attraction-repulsion to Brenier displacement</h2>
-          <p>
-            The final method keeps the drifting generator loss, but replaces the kernel-defined velocity field with a
-            convex-potential map trained inside the loop.
+          <h2>Three paradigms for the drift field</h2>
+          <p class="prose large">
+            We compare the three distinct formulations: the heuristic kernel baseline, 
+            the batch-local optimal transport, and our proposed global convex potential field.
           </p>
         </div>
-        <div class="method-grid">
-          <article class="card step-card">
-            <span class="step-number">01</span>
-            <h3>Drifting update</h3>
+
+        <!-- 1. The Universal Framework -->
+        <article class="card step-card wide" style="margin-bottom: 2rem; border-left: 4px solid var(--color-primary);">
+          <div class="figure-header">
+            <h3>1. The Universal Drifting Update</h3>
+          </div>
+          <div class="prose">
             <p>
-              Sample <span class="math">\(\varepsilon \sim p_{\varepsilon}\)</span>, generate <span
-                class="math">\(x=f_{\theta}(\varepsilon)\)</span>, compute a drift target <span
-                class="math">\(x+V(x)\)</span>, and regress the generator onto this stopped-gradient target. The drift
-              shapes training, not inference.
+              Regardless of the method used to compute <span class="math">\(V(x)\)</span>, the generator training 
+              loop remains identical. For a noise sample <span class="math">\(\varepsilon \sim p_\varepsilon\)</span>, 
+              we generate <span class="math">\(x = f_\theta(\varepsilon)\)</span>. We then compute a target position 
+              <span class="math">\(x_{\text{target}} = x + V(x)\)</span> and minimize the squared distance between 
+              the generator output and this target.
+            </p>
+            <div class="equation-card">
+              <p class="equation-title">Generator Loss</p>
+              <p>
+                <span class="math">\(\mathcal{L}_{\text{gen}}(\theta) = \mathbb{E}_{\varepsilon} \left[ \left\| f_\theta(\varepsilon) 
+                  - \operatorname{sg}\Big( f_\theta(\varepsilon) + V(f_\theta(\varepsilon)) \Big) \right\|^2 \right]\)</span>
+              </p>
+            </div>
+            <p>
+              The operator <span class="math">\(\operatorname{sg}(\cdot)\)</span> denotes <strong>stop-gradient</strong>. 
+              It treats the target position as a fixed constant during backpropagation, ensuring the generator learns to 
+              move toward the data manifold rather than manipulating the drift field itself. At equilibrium, if 
+              <span class="math">\(q_\theta = p_{\text{data}}\)</span>, the drift vanishes (<span class="math">\(V(x)=0\)</span>) 
+              and the loss becomes zero.
+            </p>
+          </div>
+        </article>
+
+        <!-- 2. Comparison of Drift Methods -->
+        <div class="section-subhead" style="margin-top: 3rem;">
+          <h3>2. Computing the Drift Field</h3>
+          <p class="prose">
+            Below we detail the three definitions of <span class="math">\(V(x)\)</span> implemented in this work.
+          </p>
+        </div>
+
+        <div class="method-grid three" style="margin-top: 2rem;">
+          <!-- Method A: Kernel -->
+          <article class="card step-card method-kernel">
+            <span class="step-number">A</span>
+            <h3>Kernel Drift (Baseline)</h3>
+            <p>
+              The original approach defines <span class="math">\(V(x)\)</span> via an attraction-repulsion rule using a 
+              Gaussian kernel <span class="math">\(k(x,y) = \exp(-\|x-y\|^2/\tau)\)</span>. Generated samples are pulled 
+              toward real data <span class="math">\(y^+\)</span> and pushed away from other generated samples 
+              <span class="math">\(y^-\)</span>.
+            </p>
+            <div class="equation-card">
+              <p>
+                <span class="math">\(V_{\text{kernel}}(x) = \sum_{y^+} \alpha_{xy^+} y^+ - \sum_{y^-} \beta_{xy^-} y^-\)</span>
+              </p>
+            </div>
+            <p style="font-size: 0.9em; color: var(--color-text-muted);">
+              <strong>Limitation:</strong> Highly sensitive to the temperature <span class="math">\(\tau\)</span>. If <span class="math">\(\tau\)</span> is too small, the repulsion term collapses, causing mode collapse. The field is also recomputed from scratch every batch.
             </p>
           </article>
-          <article class="card step-card">
-            <span class="step-number">02</span>
-            <h3>Kernel baseline</h3>
+
+          <!-- Method B: Direct OT -->
+          <article class="card step-card method-ot">
+            <span class="step-number">B</span>
+            <h3>Direct OT Drift</h3>
             <p>
-              The baseline uses an attraction term toward data and a repulsion term away from generated peers. It is
-              fast, but depends sharply on <span class="math">\(\tau\)</span> and is recomputed from scratch on every
-              batch.
+              This method computes the drift using the Sinkhorn algorithm to find an optimal coupling <span class="math">\(\pi\)</span> between the current batch of generated samples <span class="math">\(X\)</span> and real data <span class="math">\(Y\)</span>. The drift moves each <span class="math">\(x_i\)</span> toward its barycentric target <span class="math">\(\bar{y}_i\)</span>.
+            </p>
+            <div class="equation-card">
+              <p>
+                <span class="math">\(\bar{y}_i = \sum_j \frac{\pi_{ij}}{\sum_k \pi_{ik}} y_j, \)</span>
+              </p>
+              <p>
+                <span class="math">\(V_{\text{OT}}(x_i) = \bar{y}_i - x_i\)</span>
+              </p>
+            </div>
+            <p style="font-size: 0.9em; color: var(--color-text-muted);">
+              <strong>Limitation:</strong> While geometrically grounded, the drift is only defined at the specific particle locations of the current batch. It cannot generalize to unseen points without recomputing the expensive <span class="math">\(O(N^2)\)</span> Sinkhorn iterations.
             </p>
           </article>
-          <article class="card step-card">
-            <span class="step-number">03</span>
-            <h3>Brenier displacement</h3>
+
+          <!-- Method C: CCNPF (Ours) -->
+          <article class="card step-card method-ccnpf">
+            <span class="step-number">C</span>
+            <h3>CCNPF (Ours)</h3>
             <p>
-              Under quadratic cost, the Monge map has the form <span class="math">\(T^*=\nabla\Psi^*\)</span>. We
-              therefore define the drift as <span class="math">\(V^*(x)=\nabla\Psi^*(x)-x\)</span>, giving an
-              optimal-transport-motivated displacement field.
+              We propose learning a <strong>global convex potential</strong> <span class="math">\(\psi_\omega\)</span> such that the drift is the gradient of this potential minus the identity. By Brenier's theorem, this guarantees <span class="math">\(V(x)\)</span> corresponds to the optimal transport map under quadratic cost.
             </p>
-          </article>
-          <article class="card step-card">
-            <span class="step-number">04</span>
-            <h3>CCNPF / ICNN</h3>
-            <p>
-              We parameterize <span class="math">\(\Psi_{\omega}\)</span> with an ICNN and train a cycle-consistent
-              neural potential field. Non-negative cascade weights and PSD quadratic terms preserve convexity in the
-              latent input.
+            <div class="equation-card">
+              <p>
+                <span class="math">\(V_{\text{CCNPF}}(x) = \nabla \psi_\omega(x) - x\)</span>
+              </p>
+            </div>
+            <p style="font-size: 0.9em; color: var(--color-text-muted);">
+              <strong>Advantage:</strong> The field is continuous and defined everywhere in latent space. Once trained, evaluating <span class="math">\(V(x)\)</span> is <span class="math">\(O(1)\)</span> relative to batch size, amortizing the cost of optimal transport.
             </p>
           </article>
         </div>
-        <!-- Full pipeline — primary method visual -->
-        <article class="card figure-card wide method-pipeline">
-          <div class="figure-header">
-            <h3>Full pipeline</h3>
-            <p>
-              Noise <span class="math">\(\varepsilon\)</span> enters the generator
-              <span class="math">\(f_{\theta}\)</span>; the ICNN potential computes the Brenier drift
-              <span class="math">\(V_{\omega}(x) = \nabla\psi_{\omega}(x) - x\)</span>; the generator is regressed
-              onto the displaced target. At inference, only a single forward pass through
-              <span class="math">\(f_{\theta}\)</span> is needed.
-            </p>
-          </div>
-          <img class="figure-image" src="./static/images/method-diagram.png"
-            alt="Drifting-ICNN full pipeline: noise input epsilon passes through the generator f-theta, the ICNN potential computes the drift, and the generator is regressed onto the displaced target." />
-        </article>
+
         <!-- Supporting figures: drifting update schematic and kernel drift baseline -->
         <div class="figure-grid figure-grid-two">
           <article class="card figure-card">
@@ -431,7 +468,8 @@
                 a single forward pass through <span class="math">\(f_{\theta}\)</span> still produces the sample.</p>
             </div>
             <img class="figure-image" src="./static/images/fig-drifting-schematic.svg"
-              alt="Drifting update schematic: orange samples from q-theta are pushed by displacement vectors V(x_i) toward the blue data distribution p-data." />
+              alt="Drifting update schematic: orange samples from q-theta are pushed by displacement vectors V(x_i) toward 
+              the blue data distribution p-data." />
           </article>
           <article class="card figure-card">
             <div class="figure-header">
@@ -442,43 +480,85 @@
                 difference.</p>
             </div>
             <img class="figure-image" src="./static/images/fig-kernel-drift.svg"
-              alt="Kernel attraction-repulsion drift: blue arrows attract sample x toward data points y-plus, orange arrows show peer y-minus contributions, thick black arrow is the net V(x)." />
+              alt="Kernel attraction-repulsion drift: blue arrows attract sample x toward data points y-plus, orange 
+              arrows show peer y-minus contributions, thick black arrow is the net V(x)." />
           </article>
         </div>
 
-        <div class="equation-grid">
-          <article class="card equation-card">
-            <p class="equation-title">Monge objective</p>
-            <p><span
-                class="math">\(W_2^2(q_{\theta},p_{\mathrm{data}})=\inf_{T_{\#}q_{\theta}=p_{\mathrm{data}}}\mathbb{E}\lVert
-                X-T(X)\rVert^2\)</span></p>
-          </article>
-          <article class="card equation-card">
-            <p class="equation-title">Learned displacement</p>
-            <p><span class="math">\(T_{\omega}(z)=\nabla\psi_{\omega}(z),\quad V_{\omega}(z)=T_{\omega}(z)-z\)</span>
-            </p>
-          </article>
-        </div>
-        <!-- ICNN convex-potential parameterization figure -->
-        <div class="figure-grid">
+        <!-- 3. The ICNN Architecture -->
+        <div class="section-subhead" style="margin-top: 3rem;">
+          <h3>3. Architecture: Input Convex Neural Networks</h3>
+          <p class="prose">
+            To ensure <span class="math">\(\psi_\omega\)</span> is convex, we use an Input Convex Neural Network (ICNN). 
+            The architecture enforces convexity by construction through two constraints:
+          </p>
+          <ul style="margin: 1rem 0 2rem 1.5rem; line-height: 1.6;">
+            <li><strong>Non-negative weights:</strong> All weights connecting hidden layers are constrained to be 
+              positive (<span class="math">\(W^{(z)} \geq 0\)</span>), typically parameterized as 
+              <span class="math">\(\exp(\tilde{W})\)</span>.</li>
+            <li><strong>Convex activations:</strong> We use non-decreasing convex activation functions like 
+              Softplus (<span class="math">\(\sigma(u) = \frac{1}{\beta}\log(1+e^{\beta u})\)</span>).</li>
+          </ul>
+          
           <article class="card figure-card wide diagram">
             <div class="figure-header">
-              <h3>ICNN convex-potential parameterization</h3>
+              <h3>ICNN Structure</h3>
               <p>
-                The potential <span class="math">\(\Psi_{\omega}\)</span> is an input-convex neural network (ICNN):
-                non-negative cascade weights <span class="math">\(\exp(W^y) \geq 0\)</span> between hidden layers and
-                direct linear skip connections from the input <span class="math">\(z\)</span> enforce global convexity
-                with respect to <span class="math">\(z\)</span>. The gradient <span class="math">\(T_{\omega}(z) =
-                  \nabla_z \Psi_{\omega}(z)\)</span> is then the transport map; subtracting the identity gives the drift
-                <span class="math">\(V_{\omega}(z) = T_{\omega}(z) - z\)</span>.
+                The input <span class="math">\(z\)</span> is passed through multiple hidden layers. Each layer receives 
+                a direct affine connection from the input (skip connection) and a non-negative connection from the previous 
+                hidden layer. The final output is a sum of a quadratic form and the deep cascade, ensuring global convexity.
               </p>
             </div>
             <img class="figure-image" src="./static/images/fig-icnn-potential.svg"
-              alt="ICNN convex-potential parameterization: input z passes through hidden layers with non-negative cascade weights and skip connections, producing psi-omega(z) whose gradient is the transport map T-omega." />
+              alt="ICNN architecture diagram showing non-negative weights and input skip connections." />
           </article>
         </div>
+
+        <!-- 4. The Training Algorithm -->
+        <div class="section-subhead" style="margin-top: 3rem;">
+          <h3>4. The Nested Training Loop</h3>
+          <p class="prose">
+            Training our model involves a nested optimization procedure. In every outer generator step, we first refine 
+            the potential <span class="math">\(\psi_\omega\)</span> to match the current data distribution, then update 
+            the generator.
+          </p>
+        </div>
+
+        <article class="card" style="background: var(--color-bg-tertiary); padding: 2rem; font-family: monospace; font-size: 0.9em; overflow-x: auto;">
+          <p style="margin-top:0; color: var(--color-text-muted);">// Outer Loop: Update Generator f_θ</p>
+          <p>Sample minibatch: <span class="math">\(\varepsilon \sim p_\varepsilon, \quad y \sim p_{\text{data}}\)</span></p>
+          <p>Generate: <span class="math">\(x = f_\theta(\varepsilon)\)</span></p>
+          <br>
+          <p style="color: var(--color-text-muted);">// Inner Loop: Fit Potential ψ_ω to current batch (K steps)</p>
+          <p><strong>for</strong> k = 1 to K <strong>do</strong>:</p>
+          <p style="padding-left: 1.5rem;">
+            Solve for conjugate points or Sinkhorn targets <span class="math">\(\bar{y}\)</span>
+          </p>
+          <p style="padding-left: 1.5rem;">
+            Minimize regression loss: <span class="math">\(\mathcal{L}_{\text{inner}} = \| \nabla \psi_\omega(x) - \bar{y} \|^2\)</span>
+          </p>
+          <p style="padding-left: 1.5rem;">
+            Update <span class="math">\(\omega\)</span> via Adam
+          </p>
+          <p><strong>end for</strong></p>
+          <br>
+          <p style="color: var(--color-text-muted);">// Compute Drift and Update Generator</p>
+          <p>Compute drift: <span class="math">\(V(x) = \nabla \psi_\omega(x) - x\)</span></p>
+          <p>Compute target: <span class="math">\(x_{\text{target}} = \operatorname{sg}(x + V(x))\)</span></p>
+          <p>Minimize generator loss: <span class="math">\(\mathcal{L}_{\text{gen}} = \| x - x_{\text{target}} \|^2\)</span></p>
+          <p>Update <span class="math">\(\theta\)</span> via Adam</p>
+        </article>
+
+        <div class="callout takeaway" style="margin-top: 2rem;">
+          <strong>Key Insight:</strong> The inner loop amortizes the expensive optimal transport computation into the neural 
+          network weights. Once <span class="math">\(\psi_\omega\)</span> is trained, evaluating the drift for new samples 
+          requires only a single forward 
+          and backward pass through the ICNN, without solving any optimization problem.
+        </div>
+
       </div>
     </section>
+
 
     <section class="section" id="experiments">
       <div class="shell">
@@ -800,7 +880,7 @@
 
           <article class="card person-card">
             <h3>Johan Bordet</h3>
-            <p>MNIST digit-generation demo, website integration, and support for model training experiments.</p>
+            <p>Generation demos and website integration, website development and support for model training experiments.</p>
           </article>
 
           <article class="card person-card">
