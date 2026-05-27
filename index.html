@@ -607,17 +607,54 @@
 
             <article class="card figure-card wide diagram">
               <div class="figure-header">
-                <h3>ICNN Structure</h3>
+                <h3>CCNPF Architecture: Additive Brenier Form</h3>
                 <p>
-                  The input <span class="math">\(z\)</span> is passed through multiple hidden layers. Each layer
-                  receives
-                  a direct affine connection from the input (skip connection) and a non-negative connection from the
-                  previous
-                  hidden layer. The final output is a sum of a quadratic form and the deep cascade, ensuring global
-                  convexity.
+                  Our potential <span class="math">\(\psi_\omega(z)\)</span> follows the additive Brenier parameterization. 
+                  It is constructed as a sum of a deep convex cascade, direct input injections, and explicit quadratic forms. 
+                  Convexity is guaranteed by three structural constraints:
+                </p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                  
+                  <!-- Component 1: Deep Cascade -->
+                  <div>
+                    <h4 style="margin-top: 0; color: var(--color-primary); font-size: 1rem;">1. Deep Convex Cascade</h4>
+                    <p style="font-size: 0.9em; line-height: 1.5;">
+                      The hidden states <span class="math">\(y_\ell\)</span> evolve via a recurrence where hidden-to-hidden weights 
+                      are <strong>non-negative</strong> (parameterized as <span class="math">\(\exp(W^y)\)</span> to enforce positivity). 
+                      Activations <span class="math">\(\sigma_\ell\)</span> are convex and non-decreasing (Softplus). This ensures the 
+                      deep path remains convex.
+                    </p>
+                  </div>
+
+                  <!-- Component 2: Input Injections & Quadratics -->
+                  <div>
+                    <h4 style="margin-top: 0; color: var(--color-primary); font-size: 1rem;">2. Direct Injections & Quadratics</h4>
+                    <p style="font-size: 0.9em; line-height: 1.5;">
+                      Unlike standard ICNNs, the input <span class="math">\(z\)</span> is injected directly into every layer via 
+                      <strong>unconstrained</strong> affine maps <span class="math">\(W^z_\ell z + b_\ell\)</span> (blue arrows). 
+                      Additionally, explicit convex quadratic forms <span class="math">\(Q_\ell(z) = \|\delta_\ell \odot z\|^2 + \|A_\ell z\|^2\)</span> 
+                      (teal dashed lines) are added at each layer to enrich the curvature.
+                    </p>
+                  </div>
+
+                  <!-- Component 3: PSD Readout -->
+                  <div>
+                    <h4 style="margin-top: 0; color: var(--color-primary); font-size: 1rem;">3. PSD Readout Base</h4>
+                    <p style="font-size: 0.9em; line-height: 1.5;">
+                      The final output sums a global Positive Semi-Definite (PSD) quadratic term (purple dashed line):
+                      <span class="math">\(\frac{1}{2}z^\top (\text{diag}(\delta_L^2) + A_L^\top A_L) z\)</span>.
+                      This ensures <strong>strong convexity</strong>.
+                    </p>
+                  </div>
+
+                </div>
+
+                <p style="margin-top: 1.5rem; font-size: 0.95em;">
+                  The final transport map is computed via automatic differentiation: <span class="math">\(T_\omega(z) = \nabla_z \psi_\omega(z)\)</span>.
                 </p>
               </div>
-              <img class="figure-image" src="./static/images/fig-icnn-potential.svg"
+              <img class="figure-image" src="./static/images/ICNN_structure.png"
                 alt="ICNN architecture diagram showing non-negative weights and input skip connections." />
             </article>
           </div>
@@ -634,42 +671,74 @@
             </p>
           </div>
 
-          <article class="card"
-            style="background: var(--color-bg-tertiary); padding: 2rem; font-family: monospace; font-size: 0.9em; overflow-x: auto;">
-            <p style="margin-top:0; color: var(--color-text-muted);">// Outer Loop: Update Generator f_θ</p>
-            <p>Sample minibatch: <span class="math">\(\varepsilon \sim p_\varepsilon, \quad y \sim
-                p_{\text{data}}\)</span></p>
-            <p>Generate: <span class="math">\(x = f_\theta(\varepsilon)\)</span></p>
-            <br>
-            <p style="color: var(--color-text-muted);">// Inner Loop: Fit Potential ψ_ω to current batch (K steps)</p>
-            <p><strong>for</strong> k = 1 to K <strong>do</strong>:</p>
-            <p style="padding-left: 1.5rem;">
-              Solve for conjugate points or Sinkhorn targets <span class="math">\(\bar{y}\)</span>
-            </p>
-            <p style="padding-left: 1.5rem;">
-              Minimize regression loss: <span class="math">\(\mathcal{L}_{\text{inner}} = \| \nabla \psi_\omega(x) -
-                \bar{y} \|^2\)</span>
-            </p>
-            <p style="padding-left: 1.5rem;">
-              Update <span class="math">\(\omega\)</span> via Adam
-            </p>
-            <p><strong>end for</strong></p>
-            <br>
-            <p style="color: var(--color-text-muted);">// Compute Drift and Update Generator</p>
-            <p>Compute drift: <span class="math">\(V(x) = \nabla \psi_\omega(x) - x\)</span></p>
-            <p>Compute target: <span class="math">\(x_{\text{target}} = \operatorname{sg}(x + V(x))\)</span></p>
-            <p>Minimize generator loss: <span class="math">\(\mathcal{L}_{\text{gen}} = \| x - x_{\text{target}}
-                \|^2\)</span></p>
-            <p>Update <span class="math">\(\theta\)</span> via Adam</p>
-          </article>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem;">
+      
+            <!-- Left Column: The Objective -->
+            <div>
+              <h4 style="margin-top: 0; color: var(--color-primary);">The Objective Function</h4>
+              <p style="font-size: 0.95em; line-height: 1.6;">
+                We minimize the Fenchel dual of the Wasserstein distance, regularized by a <strong>cycle-consistency</strong> 
+                term. For a batch of generated samples <span class="math">\(x\)</span> and real data 
+                <span class="math">\(y\)</span>, the inner loss is:
+              </p>
+              <div class="equation-card" style="margin: 1rem 0; padding: 1rem; background: var(--color-bg-tertiary); border-left: 3px solid var(--color-primary);">
+                <p style="margin: 0; font-size: 0.9em;">
+                  <span class="math">\(\mathcal{L}_{\text{CCNPF}} = \underbrace{\mathbb{E}_x[\psi(x)] - 
+                    \mathbb{E}_y[\psi^*(y)]}_{\text{Fenchel Dual}} + 
+                    \underbrace{\gamma \cdot \mathcal{L}_{\text{cyc}}}_{\text{Cycle Consistency}}\)</span>
+                </p>
+              </div>
+              <p style="font-size: 0.95em; line-height: 1.6;">
+                Where the conjugate value <span class="math">\(\psi^*(y)\)</span> is computed via an inner maximization:
+                <span class="math">\(\psi^*(y) = \max_z \left( \langle z, y \rangle - \psi(z) \right)\)</span>.
+              </p>
+              <p style="font-size: 0.95em; line-height: 1.6;">
+                The <strong>cycle-consistency term</strong> <span class="math">\(\mathcal{L}_{\text{cyc}}\)</span> enforces that the forward and inverse maps are true inverses, preventing the potential from collapsing:
+                <span class="math">\(\mathcal{L}_{\text{cyc}} = \mathbb{E}_x \| \nabla \psi^*(\nabla \psi(x)) - x \|^2 + \mathbb{E}_y \| \nabla \psi(\nabla \psi^*(y)) - y \|^2\)</span>.
+              </p>
+            </div>
+
+            <!-- Right Column: The Algorithm -->
+            <div>
+              <h4 style="margin-top: 0; color: var(--color-primary);">Algorithm: Nested Saddle-Point Optimization</h4>
+              <article class="card" style="background: var(--color-bg-tertiary); padding: 1.5rem; font-family: monospace; font-size: 0.85em; height: 100%;">
+                <p style="margin-top:0; color: var(--color-text-muted);">// Outer Loop: Generator Update</p>
+                <p>Sample <span class="math">\(x = f_\theta(\varepsilon), \quad y \sim p_{\text{data}}\)</span></p>
+                <br>
+                <p style="color: var(--color-text-muted);">// Inner Loop: CCNPF Potential Update (K steps)</p>
+                <p><strong>for</strong> k = 1 to K <strong>do</strong>:</p>
+                
+                <p style="padding-left: 1.5rem; margin-top: 0.5rem;">
+                  <span style="color: var(--color-primary);">// 1. Approximate Conjugate Points (ArgMax)</span><br>
+                  <span style="padding-left: 1rem;">For each <span class="math">\(y\)</span>, solve: <span class="math">\(z^* = \arg\max_z (\langle z, y \rangle - \psi(z))\)</span></span><br>
+                  <span style="padding-left: 1rem;">(Initialized via amortizer network, refined via Adam)</span>
+                </p>
+
+                <p style="padding-left: 1.5rem; margin-top: 0.5rem;">
+                  <span style="color: var(--color-primary);">// 2. Compute Fenchel + Cycle Loss</span><br>
+                  <span style="padding-left: 1rem;"> <span class="math">\(\mathcal{L} = \text{mean}(\psi(x)) - \text{mean}(\langle z^*, y \rangle - \psi(z^*))\)</span></span><br>
+                  <span style="padding-left: 1rem;"> <span class="math">\(+ \gamma \cdot \| \nabla \psi(z^*) - y \|^2\)</span> <span style="font-size:0.8em">(Inverse Residual)</span></span><br>
+                  <span style="padding-left: 1rem;"><span class="math">\(+ \gamma \cdot \| \nabla \psi^*(\nabla \psi(x)) - x \|^2\)</span> <span style="font-size:0.8em">(Cycle Check)</span></span>
+                </p>
+
+                <p style="padding-left: 1.5rem; margin-top: 0.5rem;">
+                  <span style="color: var(--color-primary);">// 3. Gradient Step</span><br>
+                  <span style="padding-left: 1rem;">Update <span class="math">\(\omega\)</span> to minimize <span class="math">\(\mathcal{L}\)</span></span>
+                </p>
+                <p><strong>end for</strong></p>
+                <br>
+                <p style="color: var(--color-text-muted);">// Apply Drift to Generator</p>
+                <p>Compute drift: <span class="math">\(V(x) = \nabla \psi_\omega(x) - x\)</span></p>
+                <p>Update <span class="math">\(\theta\)</span> to minimize <span class="math">\(\| x - \operatorname{sg}(x + V(x)) \|^2\)</span></p>
+              </article>
+            </div>
+          </div>
+
+          <img class="figure-image" src="./static/images/Training_diagram.png"
+                alt="ICNN architecture diagram showing non-negative weights and input skip connections." />
 
           <div class="callout takeaway" style="margin-top: 2rem;">
-            <strong>Key Insight:</strong> The inner loop amortizes the expensive optimal transport computation into the
-            neural
-            network weights. Once <span class="math">\(\psi_\omega\)</span> is trained, evaluating the drift for new
-            samples
-            requires only a single forward
-            and backward pass through the ICNN, without solving any optimization problem.
+            <strong>Key Innovation:</strong> By optimizing the Fenchel dual directly, CCNPF avoids the <span class="math">\(O(N^2)\)</span> memory and computation of Sinkhorn algorithms. The <em>cycle-consistency</em> term acts as a geometric guardrail, ensuring the learned map <span class="math">\(\nabla \psi\)</span> remains invertible and strictly monotone, which is critical for stable high-dimensional generation.
           </div>
 
         </div>
