@@ -80,7 +80,7 @@
             toward the data distribution.
           </p>
           <p class="authors">
-            Quentin Chappuis · Johan Bordet · Satyam Chauhan · Alireza Abdollahpoorrostam
+            Quentin P. Chappuis · Johan I. A. Bordet · Satyam O. Chauhan · Alireza Abdollahpoorrostam
           </p>
           <div class="hero-actions" aria-label="Project links">
             <a class="button primary" href="https://github.com/alirezaabdollahpour/Drifting-ICNN" target="_blank"
@@ -91,6 +91,9 @@
           </div>
         </div>
         <aside class="hero-panel" aria-label="Result summary">
+          <div class="figure-header">
+            <h3>MNIST evaluation summary</h3>
+          </div>
           <div class="panel-glow" aria-hidden="true"></div>
           <div class="metric-stack" id="hero-metrics">
             <div class="mini-card">
@@ -112,8 +115,9 @@
           <figure class="hero-figure-wrap">
             <img class="hero-figure" src="./static/images/mnist_quality_scorecard.png"
               alt="Normalized quality scorecard comparing Kernel, OT-direct, and CCNPF." />
-            <figcaption>MNIST evaluation summary: CCNPF wins the global quality score, while runtime remains the main
-              bottleneck.</figcaption>
+            <figcaption>Using a frozen VAE encoder, class-balanced batches, 5000 outer iterations, and the same 
+              generator MLP across methods, our cycle-consistent neural potential field variant (CCNPF) obtains 
+              the best global distributional quality, while runtime remains the main bottleneck.</figcaption>
           </figure>
         </aside>
       </div>
@@ -127,8 +131,12 @@
         </div>
         <div class="prose large">
           <p>
-            Drifting generative models train a one-step generator by moving its push-forward distribution
-            <span class="math">\(q_{\theta} = {f_{\theta}}_{\#}p_{\varepsilon}\)</span> along a velocity field during
+            One-step generative models are attractive because they produce samples in a single forward pass, avoiding the 
+            iterative inference required by diffusion and flowmatching methods.
+            Drifting models train a one-step generator by moving its push-forward distribution
+            <span class="math">\(q_{\theta} = {f_{\theta}}_{\#}p_{\varepsilon}\)</span> (i.e., the image of a prior 
+            <span class="math">\(p_{\varepsilon}\)</span> under the generator <span class="math">\(f_{\theta}\)</span>) 
+            along a velocity field during
             training <sup><a class="citation" href="#ref-deng">[1]</a></sup>. Inference remains simple:
             a single forward pass <span class="math">\(x = f_{\theta}(\varepsilon)\)</span> produces a sample. The
             original kernel drift pulls generated samples toward data and pushes them away from other generated samples,
@@ -143,13 +151,6 @@
                 href="#ref-villani">[5]</a></sup>, and ICNNs provide a practical way to parameterize such convex
             functions <sup><a class="citation" href="#ref-amos">[3]</a></sup>.
           </p>
-          <p>
-            On MNIST, using a frozen VAE encoder, class-balanced batches, 5000 outer iterations, and the same generator
-            MLP across methods, our cycle-consistent neural potential field variant (CCNPF) obtains the best global
-            distributional quality: Sliced W2 of <strong>0.01008</strong>, feature FID of <strong>87.95</strong>, and
-            mean normalized quality score of <strong>0.88</strong>. The cost is runtime: <strong>1.379 seconds</strong>
-            per iteration, compared with <strong>0.040 seconds</strong> for the kernel baseline.
-          </p>
         </div>
       </div>
     </section>
@@ -157,27 +158,28 @@
     <section class="section tinted" id="introduction">
       <div class="shell two-column align-start">
         <div>
-          <p class="section-kicker">Introduction</p>
-          <h2>Three ways to define the motion</h2>
+          <p class="section-kicker">Introduction & Related Work</p>
+          <h2>From attraction-repulsion to Brenier displacement</h2>
         </div>
-        <div class="prose">
+        <div class="prose large">
           <p>
-            The starting point of the project is the drifting framework: instead of sampling through many denoising or
-            flow steps at inference time, we train a one-step generator whose samples are repeatedly displaced during
-            training <sup><a class="citation" href="#ref-deng">[1]</a></sup>. Each generated latent <span
-              class="math">\(x=f_{\theta}(\varepsilon)\)</span> is pushed toward a target point <span class="math">\(x +
-              V_{p_{\mathrm{data}},q_{\theta}}(x)\)</span>, and the generator is regressed onto that stopped-gradient
-            target.
+            The starting point of this project is the <strong>drifting framework</strong> introduced by Deng et al. 
+            <sup><a class="citation" href="#ref-deng">[1]</a></sup>. Unlike diffusion or flow-matching methods that 
+            require iterative sampling at inference, drifting trains a one-step generator <span class="math">\(f_{\theta}\)</span> 
+            by evolving its 
+            push-forward distribution <span class="math">\(q_{\theta}\)</span> along 
+            a velocity field <span class="math">\(V\)</span> during training. 
+            The generator is regressed onto a stopped-gradient target <span class="math">\(x + V(x)\)</span>, ensuring that 
+            inference remains a single 
+            forward pass while the training dynamics enforce distributional matching.
           </p>
 
           <div class="equation-card">
             <p class="equation-title">One-step generator goal</p>
-            <p><span class="math">\(q_{\theta} := {f_{\theta}}_{\#}p_{\varepsilon} \approx p_{\mathrm{data}}\)</span>
-            </p>
+            <p><span class="math">\(q_{\theta} = {f_{\theta}}_{\#}p_{\varepsilon}\ \approx p_{\mathrm{data}}\)</span></p>
           </div>
-
           <div class="equation-card">
-            <p class="equation-title">Drifting update</p>
+            <p class="equation-title">Update Rule</p>
             <p><span class="math">\(\text{target: } x \mapsto x + V_{p_{\mathrm{data}},q_{\theta}}(x), \quad x =
                 f_{\theta}(\varepsilon)\)</span></p>
             <p><span class="math">\(\mathcal{L}_{\mathrm{drift}}(\theta)=\mathbb{E}_{\varepsilon}\lVert
@@ -185,242 +187,173 @@
           </div>
 
           <p>
-            The key question is how to choose the drift field <span class="math">\(V\)</span>. The <strong>kernel
-              baseline</strong> defines it with an attraction-repulsion rule: generated samples are pulled toward nearby
-            data samples and pushed away from other generated samples. This is fast and simple, but it depends strongly
-            on the kernel temperature <span class="math">\(\tau\)</span>, and the drift is recomputed from scratch for
-            every batch. It is therefore a local particle rule, not a reusable transport map <sup><a class="citation"
-                href="#ref-deng">[1]</a></sup>.
+            The critical design choice in this framework is the definition of the drift field <span class="math">\(V\)</span>. 
+            The original <strong>kernel baseline</strong> <sup><a class="citation" href="#ref-deng">[1]</a></sup> 
+            defines <span class="math">\(V\)</span> via an attraction-repulsion rule: samples are pulled toward data and pushed away from 
+            peers using a Gaussian kernel <span class="math">\(k(x,y)=\exp(-\|x-y\|/\tau)\)</span>. While computationally efficient, this 
+            approach suffers from acute <strong>temperature sensitivity</strong> (small <span class="math">\(\tau\)</span> causes mode collapse) 
+            and lacks a global representation, as the field must be recomputed from scratch for every batch.
           </p>
 
           <p>
-            A more principled alternative is <strong>direct optimal transport</strong>. Here we compute a Sinkhorn
-            coupling between generated latents and data latents, then move each generated point toward its OT
-            barycentric target. This gives a drift that better respects the geometry of the two empirical distributions
-            and reduces some of the kernel sensitivity. However, it is still batch-defined: the coupling only tells us
-            where the current particles should move, and it must be recomputed at every iteration <sup><a
-                class="citation" href="#ref-he">[2]</a></sup>.
+            To address these stability issues, He et al. <sup><a class="citation" href="#ref-he">[2]</a></sup> proposed 
+            <strong>Sinkhorn-drifting</strong>, which connects the drift to the gradient flow of the Sinkhorn divergence. 
+            By using a doubly-stochastic coupling, this method improves identifiability and reduces temperature 
+            sensitivity. However, it remains a <strong>particle-local</strong> method: the drift is defined only at 
+            the current batch locations via a discrete coupling, inheriting the <span class="math">\(O(n^2)\)</span> cost 
+            of Sinkhorn iterations without producing a reusable continuous map.
           </p>
 
           <p>
-            Our method replaces both of these batch-local rules with a learned global map. We parameterize a convex
-            potential <span class="math">\(\psi_{\omega}\)</span> with an input-convex neural network and define
-            <span class="math">\(T_{\omega}(z)=\nabla\psi_{\omega}(z)\)</span> and
-            <span class="math">\(V_{\omega}(z)=T_{\omega}(z)-z\)</span>. By Brenier's theorem, gradients of convex
-            potentials are the natural form of quadratic-cost optimal transport maps <sup><a class="citation"
-                href="#ref-brenier">[4]</a>, <a class="citation" href="#ref-villani">[5]</a></sup>. ICNNs
-            provide a neural parameterization that enforces convexity with respect to the input by construction <sup><a
-                class="citation" href="#ref-amos">[3]</a></sup>. The resulting ICNN/CCNPF drift is therefore a
-            structured, reusable displacement field rather than a kernel average or a one-batch Sinkhorn assignment.
+            Our work bridges this gap by replacing the batch-local coupling with a learned global optimal transport map. 
+            We leverage <strong>Brenier's theorem</strong> 
+            <sup><a class="citation" href="#ref-brenier">[4]</a>, <a class="citation" href="#ref-villani">[5]</a></sup>, 
+            which states that the optimal transport map between two distributions (under quadratic cost) is the gradient 
+            of a convex potential <span class="math">\(\nabla \psi\)</span>. We parameterize this potential 
+            <span class="math">\(\psi_\omega\)</span> 
+            using an <strong>Input Convex Neural Network (ICNN)</strong> <sup><a class="citation" href="#ref-amos">[3]</a></sup>, 
+            an architecture that enforces convexity by construction via non-negative weights.
           </p>
 
           <p>
-            In short, kernel drifting is the fastest but most heuristic option; direct OT is more geometrically grounded
-            but remains per-batch; ICNN drifting tries to amortize the OT structure into a continuous convex-potential
-            field. The main empirical tradeoff we observe is exactly this one: CCNPF improves global distributional
-            quality on MNIST, but the inner optimization needed to learn the potential makes it significantly slower per
-            iteration.
+            This approach builds on recent advances in <strong>Neural Optimal Transport</strong>, where ICNNs have been 
+            used to learn Monge maps via the Kantorovich dual <sup><a class="citation" href="#ref-makkuva">[6]</a></sup> and 
+            scaled to high-dimensional problems 
+            <sup><a class="citation" href="#ref-korotin">[7]</a>, <a class="citation" href="#ref-bunne">[8]</a></sup>. 
+            While related work has used minibatch OT to guide flow matching 
+            <sup><a class="citation" href="#ref-pooladian">[9]</a>, <a class="citation" href="#ref-tong">[10]</a></sup>, 
+            our method uniquely applies this to the <em>drifting</em> objective. By defining the drift as 
+            <span class="math">\(V_\omega(z) = \nabla \psi_\omega(z) - z\)</span>, we obtain a structured, continuous displacement field that 
+            amortizes the transport computation into a neural network, eliminating the need for per-batch kernel recomputation 
+            while preserving the theoretical guarantees of optimal transport.
           </p>
+
+          <p>
+            In summary, we compare three paradigms: <strong>Kernel Drifting</strong> (fast but heuristic), <strong>Direct OT</strong> 
+            (geometrically grounded but batch-local), and our proposed <strong>ICNN Drifting</strong> (global, continuous, and 
+            theoretically robust). Our experiments demonstrate that while the ICNN approach incurs a higher computational cost per 
+            iteration, it achieves superior distributional quality and stability.
+          </p>
+
+          <details class="card reference-card" style="margin-top: 2rem;">
+            <summary>View Selected References</summary>
+            <ol class="references">
+              <li id="ref-deng">
+                M. Deng, H. Li, T. Li, Y. Du, and K. He.
+                <a href="https://arxiv.org/abs/2602.04770" target="_blank" rel="noreferrer">
+                  <em>Generative Modeling via Drifting</em>
+                </a>.
+                arXiv preprint arXiv:2602.04770, 2026.
+              </li>
+              <li id="ref-he">
+                P. He, O. Khangaonkar, H. Pirsiavash, Y. Bai, and S. Kolouri.
+                <a href="https://arxiv.org/abs/2603.12366" target="_blank" rel="noreferrer">
+                  <em>Sinkhorn-Drifting Generative Models</em>
+                </a>.
+                arXiv preprint arXiv:2603.12366, 2026.
+              </li>
+              <li id="ref-amos">
+                B. Amos, L. Xu, and J. Z. Kolter.
+                <a href="https://proceedings.mlr.press/v70/amos17b.html" target="_blank" rel="noreferrer">
+                  <em>Input Convex Neural Networks</em>
+                </a>.
+                ICML, 2017.
+              </li>
+              <li id="ref-brenier">
+                Y. Brenier.
+                <a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/cpa.3160440402" target="_blank" rel="noreferrer">
+                  <em>Polar Factorization and Monotone Rearrangement of Vector-Valued Functions</em>
+                </a>.
+                Communications on Pure and Applied Mathematics, 1991.
+              </li>
+              <li id="ref-villani">
+                C. Villani.
+                <a href="https://link.springer.com/book/10.1007/978-3-540-71050-9" target="_blank" rel="noreferrer">
+                  <em>Optimal Transport: Old and New</em>
+                </a>.
+                Springer, 2009.
+              </li>
+              <li id="ref-makkuva">
+                A. V. Makkuva, A. Taghvaei, S. Oh, and J. D. Lee.
+                <a href="https://proceedings.mlr.press/v119/makkuva20a.html" target="_blank" rel="noreferrer">
+                  <em>Optimal Transport Mapping via Input Convex Neural Networks</em>
+                </a>.
+                ICML, 2020.
+              </li>
+              <li id="ref-korotin">
+                A. Korotin, D. Selikhanovych, and E. Burnaev.
+                <a href="https://openreview.net/forum?id=d8CBRlWNkqH" target="_blank" rel="noreferrer">
+                  <em>Neural Optimal Transport</em>
+                </a>.
+                ICLR, 2023.
+              </li>
+              <li id="ref-bunne">
+                C. Bunne, A. Krause, and M. Cuturi.
+                <a href="https://proceedings.neurips.cc/paper_files/paper/2022/hash/2d880acd7b31e25d45097455c8e8257f-Abstract-Conference.html"
+                  target="_blank" rel="noreferrer">
+                  <em>Supervised Training of Conditional Monge Maps</em>
+                </a>.
+                NeurIPS, 2022.
+              </li>
+              <li id="ref-pooladian">
+                A.-A. Pooladian, H. Ben-Hamu, C. Domingo-Enrich, B. Amos, Y. Lipman, and R. T. Q. Chen.
+                <a href="https://arxiv.org/abs/2304.14772" target="_blank" rel="noreferrer">
+                  <em>Multisample Flow Matching: Straightening Flows with Minibatch Couplings</em>
+                </a>.
+                ICML, 2023.
+              </li>
+              <li id="ref-tong">
+                A. Tong, K. Fatras, N. Malkin, G. Huguet, Y. Zhang, J. Rector-Brooks, G. Wolf, and Y. Bengio.
+                <a href="https://openreview.net/forum?id=CD9Snc73AW" target="_blank" rel="noreferrer">
+                  <em>Improving and Generalizing Flow-Based Generative Models with Minibatch Optimal Transport</em>
+                </a>.
+                TMLR, 2024.
+              </li>
+              <li id="ref-fan">
+                J. Fan, Q. Zhang, A. Taghvaei, and Y. Chen.
+                <a href="https://proceedings.mlr.press/v162/fan22d.html" target="_blank" rel="noreferrer">
+                  <em>Variational Wasserstein Gradient Flow</em>
+                </a>.
+                ICML, 2022.
+              </li>
+              <li id="ref-alvarez">
+                D. Alvarez-Melis, Y. Schiff, and Y. Mroueh.
+                <a href="https://openreview.net/forum?id=dpOYN7o8Jm" target="_blank" rel="noreferrer">
+                  <em>Optimizing Functionals on the Space of Probabilities with Input Convex Neural Networks</em>
+                </a>.
+                TMLR, 2022.
+              </li>
+              <li id="ref-li">
+                Y. Li, K. Swersky, and R. Zemel.
+                <a href="https://arxiv.org/abs/1502.02761" target="_blank" rel="noreferrer">
+                  <em>Generative Moment Matching Networks</em>
+                </a>.
+                ICML, 2015.
+              </li>
+              <li id="ref-salimans">
+                T. Salimans, H. Zhang, A. Radford, and D. Metaxas.
+                <a href="https://openreview.net/forum?id=rkQkBnJAb" target="_blank" rel="noreferrer">
+                  <em>Improving GANs Using Optimal Transport</em>
+                </a>.
+                ICLR, 2018.
+              </li>
+              <li id="ref-genevay">
+                A. Genevay, G. Peyré, and M. Cuturi.
+                <a href="https://proceedings.mlr.press/v84/genevay18a.html" target="_blank" rel="noreferrer">
+                  <em>Learning Generative Models with Sinkhorn Divergences</em>
+                </a>.
+                AISTATS, 2018.
+              </li>
+              <li id="ref-veseron">
+                N. Vesseron, V. De Bortoli, A. Durmus, and C. Durr.
+                <a href="https://arxiv.org/abs/2403.03071" target="_blank" rel="noreferrer">
+                  <em>Sample and Map from a Single Convex Potential: Generation using Conjugate Moment Measures</em>
+                </a>.
+                NeurIPS, 2025.
+              </li>
+            </ol>
+          </details>
         </div>
-      </div>
-    </section>
-
-    <section class="section" id="related-work">
-      <div class="shell">
-        <div class="section-heading split">
-          <div>
-            <p class="section-kicker">Related work</p>
-            <h2>From drifting to convex neural transport</h2>
-          </div>
-        </div>
-
-        <div class="related-work-grid">
-          <article class="card step-card related-card">
-            <span class="step-number">01</span>
-            <h3>Drifting and Sinkhorn-drifting models</h3>
-            <p>
-              Deng et al. introduced generative modeling via drifting, where a one-step generator is trained by pushing
-              particles with a cross-minus-self velocity field <sup><a class="citation" href="#ref-deng">[1]</a></sup>.
-              He et al. connected this view to Sinkhorn-divergence gradient flows and showed why full Sinkhorn
-              normalization improves temperature robustness and identifiability <sup><a class="citation"
-                  href="#ref-he">[2]</a></sup>. Our method keeps the drifting objective, but changes how the vector
-              field is represented.
-            </p>
-          </article>
-
-          <article class="card step-card related-card">
-            <span class="step-number">02</span>
-            <h3>Kernel drift and its fragility</h3>
-            <p>
-              The kernel baseline pulls each generated sample toward data and repels it from generated peers using <span
-                class="math">\(k(x,y)=\exp(-\lVert x-y\rVert/\tau)\)</span>. This gives an intuitive
-              attraction-repulsion rule, but it also exposes three weaknesses that motivate our approach: temperature
-              sensitivity, weak converse identifiability, and the absence of a global reusable field.
-            </p>
-          </article>
-
-          <article class="card step-card related-card">
-            <span class="step-number">03</span>
-            <h3>Brenier maps and ICNNs</h3>
-            <p>
-              Brenier's theorem states that the quadratic-cost optimal transport map is the gradient of a convex
-              potential under standard regularity assumptions <sup><a class="citation" href="#ref-brenier">[4]</a>, <a
-                  class="citation" href="#ref-villani">[5]</a></sup>. Amos et
-              al. introduced input-convex neural networks, whose architecture enforces convexity with respect to the
-              input <sup><a class="citation" href="#ref-amos">[3]</a></sup>. This directly motivates a drift of the form
-              <span class="math">\(\nabla\psi_{\omega}(z)-z\)</span>.
-            </p>
-          </article>
-
-          <article class="card step-card related-card">
-            <span class="step-number">04</span>
-            <h3>Neural OT and OT-guided generation</h3>
-            <p>
-              Makkuva et al. used ICNNs to learn optimal transport maps via the Kantorovich dual <sup><a
-                  class="citation" href="#ref-makkuva">[6]</a></sup>, and subsequent neural-OT work scales this idea to
-              broader settings <sup><a class="citation" href="#ref-korotin">[7]</a>, <a class="citation"
-                  href="#ref-bunne">[8]</a></sup>. Related work also uses minibatch OT to guide flow matching <sup><a
-                  class="citation" href="#ref-pooladian">[9]</a>, <a class="citation" href="#ref-tong">[10]</a></sup>,
-              while kernel and Sinkhorn generative losses are earlier relatives of
-              distribution matching <sup><a class="citation" href="#ref-li">[13]</a>, <a class="citation"
-                  href="#ref-genevay">[15]</a></sup>.
-            </p>
-          </article>
-        </div>
-
-        <details class="card reference-card">
-          <summary>Selected references</summary>
-          <ol class="references">
-            <li id="ref-deng">
-              M. Deng, H. Li, T. Li, Y. Du, and K. He.
-              <a href="https://arxiv.org/abs/2602.04770" target="_blank" rel="noreferrer">
-                <em>Generative Modeling via Drifting</em>
-              </a>.
-              arXiv preprint arXiv:2602.04770, 2026.
-            </li>
-
-            <li id="ref-he">
-              P. He, O. Khangaonkar, H. Pirsiavash, Y. Bai, and S. Kolouri.
-              <a href="https://arxiv.org/abs/2603.12366" target="_blank" rel="noreferrer">
-                <em>Sinkhorn-Drifting Generative Models</em>
-              </a>.
-              arXiv preprint arXiv:2603.12366, 2026.
-            </li>
-
-            <li id="ref-amos">
-              B. Amos, L. Xu, and J. Z. Kolter.
-              <a href="https://proceedings.mlr.press/v70/amos17b.html" target="_blank" rel="noreferrer">
-                <em>Input Convex Neural Networks</em>
-              </a>.
-              ICML, 2017.
-            </li>
-
-            <li id="ref-brenier">
-              Y. Brenier.
-              <a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/cpa.3160440402" target="_blank" rel="noreferrer">
-                <em>Polar Factorization and Monotone Rearrangement of Vector-Valued Functions</em>
-              </a>.
-              Communications on Pure and Applied Mathematics, 1991.
-            </li>
-
-            <li id="ref-villani">
-              C. Villani.
-              <a href="https://link.springer.com/book/10.1007/978-3-540-71050-9" target="_blank" rel="noreferrer">
-                <em>Optimal Transport: Old and New</em>
-              </a>.
-              Springer, 2009.
-            </li>
-
-            <li id="ref-makkuva">
-              A. V. Makkuva, A. Taghvaei, S. Oh, and J. D. Lee.
-              <a href="https://proceedings.mlr.press/v119/makkuva20a.html" target="_blank" rel="noreferrer">
-                <em>Optimal Transport Mapping via Input Convex Neural Networks</em>
-              </a>.
-              ICML, 2020.
-            </li>
-
-            <li id="ref-korotin">
-              A. Korotin, D. Selikhanovych, and E. Burnaev.
-              <a href="https://openreview.net/forum?id=d8CBRlWNkqH" target="_blank" rel="noreferrer">
-                <em>Neural Optimal Transport</em>
-              </a>.
-              ICLR, 2023.
-            </li>
-
-            <li id="ref-bunne">
-              C. Bunne, A. Krause, and M. Cuturi.
-              <a href="https://proceedings.neurips.cc/paper_files/paper/2022/hash/2d880acd7b31e25d45097455c8e8257f-Abstract-Conference.html"
-                target="_blank" rel="noreferrer">
-                <em>Supervised Training of Conditional Monge Maps</em>
-              </a>.
-              NeurIPS, 2022.
-            </li>
-
-            <li id="ref-pooladian">
-              A.-A. Pooladian, H. Ben-Hamu, C. Domingo-Enrich, B. Amos, Y. Lipman, and R. T. Q. Chen.
-              <a href="https://arxiv.org/abs/2304.14772" target="_blank" rel="noreferrer">
-                <em>Multisample Flow Matching: Straightening Flows with Minibatch Couplings</em>
-              </a>.
-              ICML, 2023.
-            </li>
-
-            <li id="ref-tong">
-              A. Tong, K. Fatras, N. Malkin, G. Huguet, Y. Zhang, J. Rector-Brooks, G. Wolf, and Y. Bengio.
-              <a href="https://openreview.net/forum?id=CD9Snc73AW" target="_blank" rel="noreferrer">
-                <em>Improving and Generalizing Flow-Based Generative Models with Minibatch Optimal Transport</em>
-              </a>.
-              TMLR, 2024.
-            </li>
-
-            <li id="ref-fan">
-              J. Fan, Q. Zhang, A. Taghvaei, and Y. Chen.
-              <a href="https://proceedings.mlr.press/v162/fan22d.html" target="_blank" rel="noreferrer">
-                <em>Variational Wasserstein Gradient Flow</em>
-              </a>.
-              ICML, 2022.
-            </li>
-
-            <li id="ref-alvarez">
-              D. Alvarez-Melis, Y. Schiff, and Y. Mroueh.
-              <a href="https://openreview.net/forum?id=dpOYN7o8Jm" target="_blank" rel="noreferrer">
-                <em>Optimizing Functionals on the Space of Probabilities with Input Convex Neural Networks</em>
-              </a>.
-              TMLR, 2022.
-            </li>
-
-            <li id="ref-li">
-              Y. Li, K. Swersky, and R. Zemel.
-              <a href="https://arxiv.org/abs/1502.02761" target="_blank" rel="noreferrer">
-                <em>Generative Moment Matching Networks</em>
-              </a>.
-              ICML, 2015.
-            </li>
-
-            <li id="ref-salimans">
-              T. Salimans, H. Zhang, A. Radford, and D. Metaxas.
-              <a href="https://openreview.net/forum?id=rkQkBnJAb" target="_blank" rel="noreferrer">
-                <em>Improving GANs Using Optimal Transport</em>
-              </a>.
-              ICLR, 2018.
-            </li>
-
-            <li id="ref-genevay">
-              A. Genevay, G. Peyré, and M. Cuturi.
-              <a href="https://proceedings.mlr.press/v84/genevay18a.html" target="_blank" rel="noreferrer">
-                <em>Learning Generative Models with Sinkhorn Divergences</em>
-              </a>.
-              AISTATS, 2018.
-            </li>
-
-            <li id="ref-veseron">
-              N. Veseron, V. De Bortoli, A. Durmus, and C. Durr.
-              <a href="https://proceedings.neurips.cc/paper_files/paper/2024" target="_blank" rel="noreferrer">
-                <em>Sample and Map from a Single Convex Potential: Generation using Conjugate Moment Measures</em>
-              </a>.
-              NeurIPS, 2025. <!-- TODO: update with exact proceedings URL -->
-            </li>
-          </ol>
-        </details>
       </div>
     </section>
 
