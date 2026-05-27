@@ -172,7 +172,7 @@ const MODEL_ORDER = ['kernel', 'ot_direct', 'npf'];
 
 function formatMethodLabel(method) {
   if (method === 'ot_direct') return 'OT-direct';
-  if (method === 'npf') return 'NPF';
+  if (method === 'npf') return 'CCNPF';
   if (method === 'kernel') return 'Kernel';
   return method;
 }
@@ -343,7 +343,7 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
     });
 
     output.appendChild(grid);
-    setCaption('Live comparison across Kernel, OT-direct, and NPF.');
+    setCaption('Live comparison across Kernel, OT-direct, and CCNPF.');
   }
 
   function renderFallbackSample(imageUrl, digit, captionText) {
@@ -442,7 +442,7 @@ function initWidget(sampleBankState = { data: {}, loaded: false, error: null }) 
       renderFallbackSample(
         pool[idx],
         selectedDigit,
-        `Saved sample ${idx + 1} / ${pool.length} — digit "${selectedDigit}" — NPF / ICNN conditional generator`
+        `Saved sample ${idx + 1} / ${pool.length} — digit "${selectedDigit}" — CCNPF / ICNN conditional generator`
       );
     } catch (error) {
       console.error(error);

@@ -237,6 +237,16 @@
           </p>
 
           <p>
+            We updated our architecture from the standard ICNN proposed by Amos et al. 2017<sup><a class="citation" href="#ref-amos">[3]</a></sup> 
+            to incorporate quadratic injections into all layers, as done by Vesseron and Cururi, 2024
+            <sup><a class="citation" href="#ref-veseron-2024">[17]</a></sup> yielding a Neural Polar Factorization (NPF) model.
+            We further introduce a cycle-consistency loss to encourage the learned map to be close to an involution, 
+            which we call Cycle-Consistent Neural Potential Field (CCNPF). This modification is motivated by the observation 
+            that the optimal transport map between two distributions should be close to an involution, and we find that 
+            this additional regularization significantly improves training stability and sample quality.
+          </p>
+
+          <p>
             In summary, we compare three paradigms: <strong>Kernel Drifting</strong> (fast but heuristic),
             <strong>Direct OT</strong>
             (geometrically grounded but batch-local), and our proposed <strong>ICNN Drifting</strong> (global,
@@ -362,6 +372,13 @@
                   <em>Sample and Map from a Single Convex Potential: Generation using Conjugate Moment Measures</em>
                 </a>.
                 NeurIPS, 2025.
+              </li>
+              <li id="ref-veseron-2024">
+                N. Vesseron, and M. Cuturi
+                <a href="https://arxiv.org/abs/2403.03071" target="_blank" rel="noreferrer">
+                  <em>On a Neural Implementation of Brenier's Polar Factorization</em>
+                </a>.
+                2024.
               </li>
             </ol>
           </details>
@@ -540,7 +557,7 @@
             <!-- Method C: CCNPF (Ours) -->
             <article class="card step-card method-ccnpf">
               <span class="step-number">C</span>
-              <h3>CCNPF (Ours)</h3>
+              <h3>ICNN / CCNPF (Ours)</h3>
               <p>
                 In the drifting framework, we do not apply the map <span class="math">\(T\)</span> directly. Instead,
                 we propose learning a <strong>global convex potential</strong>
@@ -607,7 +624,7 @@
 
             <article class="card figure-card wide diagram">
               <div class="figure-header">
-                <h3>CCNPF Architecture: Additive Brenier Form</h3>
+                <h3>ICNN / CCNPF Architecture: Additive Brenier Form</h3>
                 <p>
                   Our potential <span class="math">\(\psi_\omega(z)\)</span> follows the additive Brenier parameterization. 
                   It is constructed as a sum of a deep convex cascade, direct input injections, and explicit quadratic forms. 
@@ -631,10 +648,10 @@
                   <div>
                     <h4 style="margin-top: 0; color: var(--color-primary); font-size: 1rem;">2. Direct Injections & Quadratics</h4>
                     <p style="font-size: 0.9em; line-height: 1.5;">
-                      Unlike standard ICNNs, the input <span class="math">\(z\)</span> is injected directly into every layer via 
+                      The input <span class="math">\(z\)</span> is injected directly into every layer via 
                       <strong>unconstrained</strong> affine maps <span class="math">\(W^z_\ell z + b_\ell\)</span> (blue arrows). 
                       Additionally, explicit convex quadratic forms <span class="math">\(Q_\ell(z) = \|\delta_\ell \odot z\|^2 + \|A_\ell z\|^2\)</span> 
-                      (teal dashed lines) are added at each layer to enrich the curvature.
+                      (teal dashed lines) are added at each layer to enrich the curvature <sup><a class="citation" href="#ref-veseron-2024">[17]</a></sup>.
                     </p>
                   </div>
 
@@ -656,6 +673,20 @@
               </div>
               <img class="figure-image" src="./static/images/ICNN_structure.png"
                 alt="ICNN architecture diagram showing non-negative weights and input skip connections." />
+
+              <p>
+                Given this architecture's strong convexity, it is essential to initialize the potential to approximate the identity map, 
+                which corresponds to zero drift. We achieve this by:
+                (1) setting the <strong>outer quadratic base</strong> to represent the identity Hessian (yielding 
+                <span class="math">\(\psi(z) \approx \frac{1}{2}\|z\|^2\)</span>),
+                (2) shrinking the <strong>deep cascade output</strong> to near-zero, and
+                (3) initializing the <strong>affine input injections</strong> with small random weights to ensure gradient diversity 
+                without disrupting the initial state.
+                This ensures that at the start of training, <span class="math">\(T_\omega(z) = \nabla \psi_\omega(z) \approx z\)
+
+                </span> and thus <span class="math">\(V(z) \approx 0\)</span>, 
+                providing a stable starting point for optimization.
+              </p>
             </article>
           </div>
 
@@ -742,6 +773,57 @@
           </div>
 
         </div>
+    </section>
+
+    <section id="interactive" class="section tinted"
+      data-generation-endpoint="https://huggingface.co/spaces/JohanchoDeCuba/drifting-icnn-mnist/"
+      data-generation-method="npf">
+      <div class="shell two-column align-start generation-layout">
+        <div class="generation-copy">
+          <p class="section-kicker">Interactive generation</p>
+          <h2>Class-conditional MNIST samples</h2>
+          <div class="prose">
+            <p>
+              Explore qualitative outputs from our class-conditional CCNPF/ICNN MNIST generator. Choose a target digit
+              from 0 to 9, then press <strong>Generate</strong> to display one generated sample for that class. We also
+              evaluate each live sample with the exact MNISTClassifier used during training, so the confidence and
+              prediction metrics reflect the same model family that guided the experiments.
+            </p>
+            <p>
+              The displayed digits are generated live through a Hugging Face Space endpoint, allowing direct qualitative
+              inspection of our class-conditional generator.
+            </p>
+          </div>
+        </div>
+
+        <div class="widget-card card generation-widget">
+          <div class="widget-topline">
+            <p class="widget-kicker">MNIST sample generator</p>
+            <h3>Choose a digit</h3>
+            <p class="widget-intro">Select a class label and generate a live MNIST digit through our Hugging Face Space
+              endpoint.</p>
+          </div>
+
+          <div class="digit-selector-panel">
+            <div class="digit-selector" role="group" aria-label="Select digit to generate">
+              <!-- Filled by static/js/main.js -->
+            </div>
+          </div>
+
+          <button class="btn-generate" id="btn-generate" aria-label="Generate a sample" disabled>
+            Generate sample
+          </button>
+
+          <div class="widget-preview">
+            <div class="widget-output" id="widget-output" aria-live="polite">
+              <div class="output-placeholder">
+                <span>Select a digit, then generate a sample.</span>
+              </div>
+            </div>
+            <p class="widget-caption" id="widget-caption"></p>
+          </div>
+        </div>
+      </div>
     </section>
 
 
@@ -899,95 +981,151 @@
       </div>
     </section>
 
-
-    <section id="interactive" class="section tinted"
-      data-generation-endpoint="https://huggingface.co/spaces/JohanchoDeCuba/drifting-icnn-mnist/"
-      data-generation-method="npf">
-      <div class="shell two-column align-start generation-layout">
-        <div class="generation-copy">
-          <p class="section-kicker">Interactive generation</p>
-          <h2>Class-conditional MNIST samples</h2>
-          <div class="prose">
-            <p>
-              Explore qualitative outputs from our class-conditional CCNPF/ICNN MNIST generator. Choose a target digit
-              from 0 to 9, then press <strong>Generate</strong> to display one generated sample for that class. We also
-              evaluate each live sample with the exact MNISTClassifier used during training, so the confidence and
-              prediction metrics reflect the same model family that guided the experiments.
-            </p>
-            <p>
-              The displayed digits are generated live through a Hugging Face Space endpoint, allowing direct qualitative
-              inspection of our class-conditional generator.
-            </p>
-          </div>
-        </div>
-
-        <div class="widget-card card generation-widget">
-          <div class="widget-topline">
-            <p class="widget-kicker">MNIST sample generator</p>
-            <h3>Choose a digit</h3>
-            <p class="widget-intro">Select a class label and generate a live MNIST digit through our Hugging Face Space
-              endpoint.</p>
-          </div>
-
-          <div class="digit-selector-panel">
-            <div class="digit-selector" role="group" aria-label="Select digit to generate">
-              <!-- Filled by static/js/main.js -->
-            </div>
-          </div>
-
-          <button class="btn-generate" id="btn-generate" aria-label="Generate a sample" disabled>
-            Generate sample
-          </button>
-
-          <div class="widget-preview">
-            <div class="widget-output" id="widget-output" aria-live="polite">
-              <div class="output-placeholder">
-                <span>Select a digit, then generate a sample.</span>
-              </div>
-            </div>
-            <p class="widget-caption" id="widget-caption"></p>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <section class="section" id="diagnostics">
       <div class="shell">
         <div class="section-heading">
-          <p class="section-kicker">Diagnostics</p>
-          <h2>Equilibrium and identifiability</h2>
-          <p>
-            Our analysis separates the necessary equilibrium property of drifting from the stronger question of whether
-            vanishing drift implies distributional equality.
+          <p class="section-kicker">Diagnostics & Engineering Lessons</p>
+          <h2>Five Silent Failure Modes & Solutions</h2>
+          <p class="prose">
+            Our initial implementation appeared to converge based on standard metrics while silently failing to learn 
+            a meaningful transport map. A rigorous diagnostic phase revealed five critical failure modes. Addressing 
+            these was as important as the theoretical formulation itself.
           </p>
         </div>
-        <div class="fix-grid">
-          <article class="card fix-card">
-            <h3>Equilibrium axiom</h3>
-            <p>For anti-symmetric drifting fields, <span class="math">\(q_{\theta}=p_{\mathrm{data}}\)</span> implies
-              the drift vanishes. This is necessary for a sensible training target.</p>
+
+        <div class="method-grid" style="margin-top: 2rem;">
+          
+          <!-- Failure Mode 1 -->
+          <article class="card fix-card" style="border-top: 4px solid #ef4444;">
+            <div class="figure-header">
+              <h3 style="color: #ef4444;">1. Metric-Induced Collapse</h3>
+            </div>
+            <p>
+              <strong>The Bug:</strong> We initially minimized the drift norm <span class="math">\(V^2\)</span> for hyperparameter selection. 
+              We discovered this metric is minimized by <em>mode collapse</em>: if the generator maps all noise to a 
+              single point <span class="math">\(x=c\)</span>, the optimal drift is simply 
+              <span class="math">\(V(x) = \mathbb{E}[y] - c\)</span>, yielding a deceptively low loss.
+            </p>
+            <p>
+              <strong>The Fix:</strong> We replaced the selection metric with <strong>Sliced-Wasserstein-2 (SW2)</strong>, 
+              which is robust to support collapse and correctly penalizes lack of diversity.
+            </p>
           </article>
-          <article class="card fix-card">
-            <h3>Kernel converse gap</h3>
-            <p>The kernel drift needs a delicate non-degeneracy condition for the converse direction <span
-                class="math">\(V=0 \Rightarrow q_{\theta}=p_{\mathrm{data}}\)</span>.</p>
+
+          <!-- Failure Mode 2 -->
+          <article class="card fix-card" style="border-top: 4px solid #ef4444;">
+            <div class="figure-header">
+              <h3 style="color: #ef4444;">2. Diagonal Regularization Blindness</h3>
+            </div>
+            <p>
+              <strong>The Bug:</strong> Our latent regularizer initially matched only per-axis mean and variance 
+              (<span class="math">\(\mathcal{N}(0, I)\)</span> diagonals). The generator exploited this by collapsing 
+              data onto a low-dimensional subspace (e.g., a hyperplane) that satisfied marginal constraints but lacked 
+              semantic structure.
+            </p>
+            <p>
+              <strong>The Fix:</strong> We implemented a <strong>full covariance penalty</strong> 
+              (<span class="math">\(\|\text{Cov}(z) - I\|_F^2\)</span>), forcing the generator to match the 
+              full second-order structure of the latent distribution.
+            </p>
           </article>
-          <article class="card fix-card">
-            <h3>Temperature sensitivity</h3>
-            <p>The kernel scale <span class="math">\(\tau\)</span> controls the attraction-repulsion behavior: too small
-              encourages collapse; too large makes the drift nearly constant.</p>
+
+          <!-- Failure Mode 3 -->
+          <article class="card fix-card" style="border-top: 4px solid #ef4444;">
+            <div class="figure-header">
+              <h3 style="color: #ef4444;">3. Persistent Inner Momentum</h3>
+            </div>
+            <p>
+              <strong>The Bug:</strong> The Adam optimizer state for the inner loop (potential fitting) was 
+              persisted across outer batches. Since the target distribution changes every batch, the momentum vector 
+              from batch <span class="math">\(t\)</span> pointed in the <em>wrong</em> direction for batch 
+              <span class="math">\(t+1\)</span>, causing severe oscillation.
+            </p>
+            <p>
+              <strong>The Fix:</strong> We now <strong>reset the inner optimizer state</strong> at the start of 
+              every outer step, treating each batch as a fresh optimization problem.
+            </p>
           </article>
-          <article class="card fix-card">
-            <h3>Particle-local field</h3>
-            <p>Kernel and batch OT fields are defined at current batch particles. The ICNN potential gives a global
-              reusable map over latent space.</p>
+
+          <!-- Failure Mode 4 -->
+          <article class="card fix-card" style="border-top: 4px solid #ef4444;">
+            <div class="figure-header">
+              <h3 style="color: #ef4444;">4. Identity Initialization Defects</h3>
+            </div>
+            <p>
+              <strong>The Bug:</strong> Standard ICNN initialization left the non-linear cascade "live" at 
+              <span class="math">\(t=0\)</span>, creating a large offset <span class="math">\(\psi(0) \neq 0\)</span>. 
+              Simultaneously, the quadratic 
+              base was too rigid. This resulted in an initial drift <span class="math">\(V(x) \approx \text{constant}\)</span> 
+              rather than <span class="math">\(V(x) \approx 0\)</span>.
+            </p>
+            <p>
+              <strong>The Fix:</strong> We implemented a <strong>joint initialization scheme</strong>: the outer 
+              quadratic is set to exactly <span class="math">\(\frac{1}{2}\|z\|^2\)</span> (Identity Hessian), 
+              while the deep cascade output is scaled to <span class="math">\(O(\epsilon)\)</span>. This guarantees 
+              <span class="math">\(T(z) \approx z\)</span> at initialization.
+            </p>
           </article>
-          <article class="card fix-card">
-            <h3>Cycle-consistency guardrail</h3>
-            <p>The CCNPF inverse residual is tracked as a guardrail for the learned forward/backward potential maps
-              during training.</p>
+
+          <!-- Failure Mode 5 -->
+          <article class="card fix-card" style="border-top: 4px solid #ef4444;">
+            <div class="figure-header">
+              <h3 style="color: #ef4444;">5. Inner Objective Smoothing</h3>
+            </div>
+            <p>
+              <strong>The Bug:</strong> Using Sinkhorn barycenters as regression targets inherits the entropy 
+              smoothing of the Sinkhorn algorithm. At high regularization, targets collapse to the global mean 
+              <span class="math">\(\mathbb{E}[y]\)</span>, teaching the network a trivial "push-to-center" map.
+            </p>
+            <p>
+              <strong>The Fix:</strong> We switched to the <strong>Fenchel Dual objective</strong> (CCNPF), 
+              which optimizes the potential directly via conjugate maximization, eliminating the smoothing bias entirely.
+            </p>
+          </article>
+
+        </div>
+
+        <!-- Additional Engineering Improvements from Code -->
+        <div class="section-subhead" style="margin-top: 3rem;">
+          <h3>Additional Engineering Improvements</h3>
+          <p class="prose">
+            Beyond fixing failures, we implemented two advanced optimizations found in our final codebase that 
+            significantly improved stability and efficiency:
+          </p>
+        </div>
+
+        <div class="method-grid" style="margin-top: 1.5rem;">
+          <article class="card" style="background: var(--color-bg-tertiary); padding: 1.5rem;">
+            <h4 style="margin-top: 0; color: var(--color-primary);">Affine Warm-Start</h4>
+            <p style="font-size: 0.95em; line-height: 1.6;">
+              Before the neural network begins learning, we solve for the optimal <strong>linear</strong> transport 
+              map (Affine Brenier Map) in closed form using batch statistics. We inject this solution directly into 
+              the ICNN's quadratic base layers.
+            </p>
+            <p style="font-size: 0.95em; line-height: 1.6;">
+              <strong>Benefit:</strong> The network only needs to learn the <em>non-linear residual</em>, drastically 
+              reducing the optimization burden and accelerating convergence.
+            </p>
+          </article>
+
+          <article class="card" style="background: var(--color-bg-tertiary); padding: 1.5rem;">
+            <h4 style="margin-top: 0; color: var(--color-primary);">Adaptive Conjugate Skipping</h4>
+            <p style="font-size: 0.95em; line-height: 1.6;">
+              The inner loop requires solving <span class="math">\(\arg\max_z (\langle z, y \rangle - \psi(z))\)</span>. 
+              We monitor the inverse residual error. If the solution from the previous step is still accurate (below a threshold), 
+              we <strong>skip the optimization step</strong> entirely for that batch.
+            </p>
+            <p style="font-size: 0.95em; line-height: 1.6;">
+              <strong>Benefit:</strong> This dynamic scheduling reduces the computational cost of the inner loop by up to 
+              40% in later training stages without sacrificing accuracy.
+            </p>
           </article>
         </div>
+
+        <div class="callout takeaway" style="margin-top: 2rem;">
+          <strong>Conclusion:</strong> The success of CCNPF relies not just on the theoretical elegance of Brenier's theorem, but on rigorous engineering to prevent silent failures. The combination of robust metrics (SW2), full-covariance regularization, and adaptive optimization strategies transforms a theoretically sound idea into a stable, trainable system.
+        </div>
+
       </div>
     </section>
 
