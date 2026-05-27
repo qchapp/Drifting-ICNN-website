@@ -237,13 +237,17 @@
           </p>
 
           <p>
-            We updated our architecture from the standard ICNN proposed by Amos et al. 2017<sup><a class="citation" href="#ref-amos">[3]</a></sup> 
-            to incorporate quadratic injections into all layers, as done by Vesseron and Cururi, 2024
-            <sup><a class="citation" href="#ref-veseron-2024">[17]</a></sup> yielding a Neural Polar Factorization (NPF) model.
-            We further introduce a cycle-consistency loss to encourage the learned map to be close to an involution, 
-            which we call Cycle-Consistent Neural Potential Field (CCNPF). This modification is motivated by the observation 
-            that the optimal transport map between two distributions should be close to an involution, and we find that 
-            this additional regularization significantly improves training stability and sample quality.
+            We updated our architecture from the standard ICNN proposed by Amos et al. (2017)
+            <sup><a class="citation" href="#ref-amos">[3]</a></sup> 
+            to incorporate quadratic injections into all layers, following Vesseron and Cuturi (2024)
+            <sup><a class="citation" href="#ref-veseron-2024">[17]</a></sup>, 
+            yielding a Neural Polar Factorization (NPF) model.
+            We further introduce a <strong>cycle-consistency loss</strong> to enforce that the learned 
+            forward map and its convex conjugate (the inverse map) are true inverses of each other. 
+            We term this approach <strong>Cycle-Consistent Neural Potential Field (CCNPF)</strong>. 
+            This modification is motivated by the requirement that optimal transport maps must be invertible; 
+            we find that explicitly regularizing the cycle consistency (<span class="math">\(\nabla \psi^*(\nabla \psi(x)) \approx x\)</span>) 
+            significantly improves training stability and prevents the potential from collapsing to trivial solutions.
           </p>
 
           <p>
