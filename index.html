@@ -85,7 +85,7 @@
           <div class="hero-actions" aria-label="Project links">
             <a class="button primary" href="https://github.com/alirezaabdollahpour/Drifting-ICNN" target="_blank"
               rel="noreferrer">Code repository</a>
-            <a class="button" href="https://github.com/qchapp/Drifting-ICNN" target="_blank" rel="noreferrer">Website
+            <a class="button" href="https://github.com/qchapp/Drifting-ICNN-website" target="_blank" rel="noreferrer">Website
               repository</a>
             <a class="button ghost" href="#experiments">View experiments</a>
           </div>
@@ -133,7 +133,7 @@
           <p>
             One-step generative models are attractive because they produce samples in a single forward pass, avoiding
             the
-            iterative inference required by diffusion and flowmatching methods.
+            iterative inference required by diffusion and flow matching methods.
             Drifting models train a one-step generator by moving its push-forward distribution
             <span class="math">\(q_{\theta} = {f_{\theta}}_{\#}p_{\varepsilon}\)</span> (i.e., the image of a prior
             <span class="math">\(p_{\varepsilon}\)</span> under the generator <span class="math">\(f_{\theta}\)</span>)
@@ -192,7 +192,7 @@
             peers using a Gaussian kernel <span class="math">\(k(x,y)=\exp(-\|x-y\|/\tau)\)</span>. While
             computationally efficient, this
             approach suffers from acute <strong>temperature sensitivity</strong> (<span class="math">\(\tau\)</span> too
-            smallcauses mode
+            small causes mode
             collapse - too big causes constant drift)
             and lacks a global representation, as the field must be recomputed from scratch for every batch.
           </p>
